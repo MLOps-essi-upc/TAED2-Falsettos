@@ -1,0 +1,23 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -m src.data.preprocess_dataset
+    deps:
+    - path: src/data/preprocess_dataset.py
+      md5: 8d98ed40bc098567059f02a98cf3bcfa
+      size: 2746
+    - path: src/data/raw/
+      md5: 281768d3515ed704b2d106ed7517217d.dir
+      size: 3157509406
+      nfiles: 15
+    params:
+      params.yaml:
+        prepare:
+          audio_length: 1
+          total_labels: 36
+          feature_extractor: facebook/hubert-base-ls960
+    outs:
+    - path: src/data/processed/
+      md5: 71e19ba3eece3a035a491a870ffb331e.dir
+      size: 6400265348
+      nfiles: 21
