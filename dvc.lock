@@ -21,3 +21,32 @@ stages:
       md5: 71e19ba3eece3a035a491a870ffb331e.dir
       size: 6400265348
       nfiles: 21
+  train:
+    cmd: python -m src.models.train_model
+    deps:
+    - path: src/data/processed/
+      md5: 71e19ba3eece3a035a491a870ffb331e.dir
+      size: 6400265348
+      nfiles: 21
+    - path: src/models/train_model.py
+      md5: 57b8f91a033cc9dab83120b47b54f673
+      size: 8629
+    params:
+      params.yaml:
+        train:
+          algorithm_name: Hubert Classifier
+          random_state: 33
+          num_classes: 36
+          batch_size: 256
+          lr: 0.0001
+          momentum: 0.9
+          optimizer: adam
+          adapter_hidden_size: 128
+          epochs: 1
+          patience: 5
+          log_interval: 15
+    outs:
+    - path: models/
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
