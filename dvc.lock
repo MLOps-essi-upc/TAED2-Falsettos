@@ -4,8 +4,8 @@ stages:
     cmd: python -m src.data.preprocess_dataset
     deps:
     - path: src/data/preprocess_dataset.py
-      md5: 8d98ed40bc098567059f02a98cf3bcfa
-      size: 2746
+      md5: ab572d0ff8323160f20de0bcc04e788a
+      size: 2879
     - path: src/data/raw/
       md5: 281768d3515ed704b2d106ed7517217d.dir
       size: 3157509406
@@ -29,8 +29,8 @@ stages:
       size: 6400265348
       nfiles: 21
     - path: src/models/train_model.py
-      md5: 57b8f91a033cc9dab83120b47b54f673
-      size: 8629
+      md5: d3d114f91995bae8f5a0328311072245
+      size: 8977
     params:
       params.yaml:
         train:
@@ -47,6 +47,6 @@ stages:
           log_interval: 15
     outs:
     - path: models/
-      md5: 32ab90450f9ed3d23be7ccb353d1424a.dir
+      md5: eb3af6f7d6079f1668b58d616f4cd49d.dir
       size: 378782723
       nfiles: 1

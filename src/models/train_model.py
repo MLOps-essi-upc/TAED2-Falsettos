@@ -51,6 +51,7 @@ def data_loading(input_folder_path, batch_size):
 
     return train_loader, val_loader
 
+
 class HubertForAudioClassification(nn.Module):
     def __init__(self, adapter_hidden_size = 64):
         super().__init__()
@@ -85,7 +86,6 @@ class HubertForAudioClassification(nn.Module):
         x = self.hubert(x).last_hidden_state
         x = F.layer_norm(x, x.shape[1:])
         x = self.adaptor(x)
-        
         # pooling
         x, _ = x.max(dim=1)
 
@@ -101,6 +101,7 @@ def train(loader, model, criterion, optimizer, epoch, log_interval, verbose=True
     model.train()
     global_epoch_loss = 0
     samples = 0
+
     for batch_idx, batch in enumerate(loader):
         data, target = batch["features"].cuda(), batch["label"].cuda()
         optimizer.zero_grad()
@@ -110,13 +111,15 @@ def train(loader, model, criterion, optimizer, epoch, log_interval, verbose=True
         optimizer.step()
         global_epoch_loss += loss.data.item() * len(target)
         samples += len(target)
+
         if verbose and (batch_idx % log_interval == 0):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, samples, len(loader.dataset), 100*samples/len(loader.dataset), global_epoch_loss/samples))
+            
     return global_epoch_loss / samples
 
 
-def val(loader, model, criterion, epoch, log_interval, num_classes, verbose=True):
+def val(loader, model, criterion, epoch, num_classes):
     model.eval()
     global_epoch_loss = 0
     total_preds = torch.Tensor()
@@ -143,9 +146,7 @@ def val(loader, model, criterion, epoch, log_interval, num_classes, verbose=True
                 
     print('Validation Epoch: {} \tMean Loss: {:.6f} / F1-score {:.6f}'.format(epoch, global_epoch_loss/samples, F1_score))
     
-
     return global_epoch_loss / samples, F1_score
-
 
 
 
@@ -163,9 +164,9 @@ def main():
 
 
     seed_everything(params["random_state"])
-    print(params["algorithm_name"],"-------------------------")
+    print("------- Training of",params["algorithm_name"],"-------")
 
-    train_loader, val_loader = data_loading (PROCESSED_DATA_DIR, params["batch_size"])
+    train_loader, val_loader = data_loading (PROCESSED_DATA_DIR, params["batch_size"]) # data loading
 
     # ============== #
     # MODEL CREATION #
@@ -176,7 +177,6 @@ def main():
     for param in model.hubert.encoder.parameters():
         param.requires_grad = False
     model.hubert
-
 
     # Define criterion
     criterion = nn.CrossEntropyLoss(reduction = 'mean')
@@ -197,6 +197,7 @@ def main():
     # ============== #
     # MODEL TRAINING #
     # ============== #
+    print("------------- Training phase ----------------")
     checkpoint_path = Path(str(MODELS_DIR)+"/checkpoints")
     best_val_F1 = 0.0
     iteration = 0
@@ -206,8 +207,8 @@ def main():
     # training with early stopping
     t0 = time.time()
     while (epoch < params["epochs"] + 1) and (iteration < params["patience"]):
-        train_loss = train(val_loader, model, criterion, optimizer, epoch, params["log_interval"])
-        val_loss, val_F1 = val(val_loader, model, criterion, epoch, params["log_interval"], params["num_classes"])
+        train_loss = train(train_loader, model, criterion, optimizer, epoch, params["log_interval"])
+        val_loss, val_F1 = val(val_loader, model, criterion, epoch, params["num_classes"])
         
         torch.save(model.state_dict(), str(checkpoint_path)+'/model_{:03d}.pt'.format(epoch))
 
@@ -229,17 +230,22 @@ def main():
         print(f'Elapsed seconds: ({time.time() - t0:.0f}s)')
     print(f'Best F1-Score: {best_val_F1*100:.1f}% on epoch {best_epoch}')
 
+
     # ============== #
     # MODEL SAVING   #
     # ============== #
-    # get best epoch and model
+    print("-------------- Model saving -----------------")
+    # Get best epoch and model
     state = torch.load(str(checkpoint_path)+'/ckpt.pt')
     epoch = state['epoch']
-    print("Testing model (epoch {})".format(epoch))
     model.load_state_dict(torch.load(str(checkpoint_path)+'/model_{:03d}.pt'.format(epoch)))
+
+    # Save model
+    final_model_save_path = os.path.join(ROOT_DIR, 'models')
+    if not os.path.exists(final_model_save_path):
+       os.mkdir(final_model_save_path)
+    print(os.path.join(ROOT_DIR, 'models', '{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch)))
     torch.save(model.state_dict(), os.path.join(ROOT_DIR, 'models', '{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch)))
     
-
-        
 
 main()
