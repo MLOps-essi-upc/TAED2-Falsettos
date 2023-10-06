@@ -7,8 +7,7 @@ from types import SimpleNamespace
 from functools import lru_cache
 import os
 import time
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score
+
 import pandas as pd
 import numpy as np
 import scipy.fftpack
@@ -26,7 +25,7 @@ from torcheval.metrics.functional import multiclass_f1_score
 
 import torch.nn.functional as F
 
-from src import METRICS_DIR, MODELS_DIR, PROCESSED_DATA_DIR
+from src import ROOT_DIR, METRICS_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 
 
 def seed_everything(seed):
@@ -198,7 +197,7 @@ def main():
     # ============== #
     # MODEL TRAINING #
     # ============== #
-    checkpoint_path = Path(str(MODELS_DIR)+"/trained/checkpoints")
+    checkpoint_path = Path(str(MODELS_DIR)+"/checkpoints")
     best_val_F1 = 0.0
     iteration = 0
     epoch = 1
@@ -207,7 +206,7 @@ def main():
     # training with early stopping
     t0 = time.time()
     while (epoch < params["epochs"] + 1) and (iteration < params["patience"]):
-        train_loss = train(train_loader, model, criterion, optimizer, epoch, params["log_interval"])
+        train_loss = train(val_loader, model, criterion, optimizer, epoch, params["log_interval"])
         val_loss, val_F1 = val(val_loader, model, criterion, epoch, params["log_interval"], params["num_classes"])
         
         torch.save(model.state_dict(), str(checkpoint_path)+'/model_{:03d}.pt'.format(epoch))
@@ -225,9 +224,7 @@ def main():
                 'valid_loss': val_loss,
                 'epoch': epoch,
             }
-            if not os.path.isdir(args.checkpoint):
-                os.mkdir(args.checkpoint)
-            torch.save(state, './{}/ckpt.pt'.format(args.checkpoint))
+            torch.save(state, str(checkpoint_path)+'/ckpt.pt')
         epoch += 1
         print(f'Elapsed seconds: ({time.time() - t0:.0f}s)')
     print(f'Best F1-Score: {best_val_F1*100:.1f}% on epoch {best_epoch}')
@@ -236,11 +233,11 @@ def main():
     # MODEL SAVING   #
     # ============== #
     # get best epoch and model
-    state = torch.load('./{}/ckpt.pt'.format(args.checkpoint))
+    state = torch.load(str(checkpoint_path)+'/ckpt.pt')
     epoch = state['epoch']
     print("Testing model (epoch {})".format(epoch))
     model.load_state_dict(torch.load(str(checkpoint_path)+'/model_{:03d}.pt'.format(epoch)))
-    torch.save(model.state_dict(), MODELS_DIR+'/trained/{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch))
+    torch.save(model.state_dict(), os.path.join(ROOT_DIR, 'models', '{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch)))
     
 
         

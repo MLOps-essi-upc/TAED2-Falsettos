@@ -13,7 +13,7 @@ train:
   optimizer: 'adam' # optimization method: sgd | adam
   adapter_hidden_size: 128 # model hyperparameter
 
-  epochs: 50  # maximum number of epochs to train
+  epochs: 1  # maximum number of epochs to train
   patience: 5 # how many epochs of no loss improvement should we wait before stop training
-  log_interval: 5 # how many batches to wait before logging training status
+  log_interval: 15 # how many batches to wait before logging training status
   
