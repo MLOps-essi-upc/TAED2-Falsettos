@@ -47,6 +47,6 @@ stages:
           log_interval: 15
     outs:
     - path: models/
-      md5: d751713988987e9331980363e24189ce.dir
-      size: 0
-      nfiles: 0
+      md5: 32ab90450f9ed3d23be7ccb353d1424a.dir
+      size: 378782723
+      nfiles: 1
