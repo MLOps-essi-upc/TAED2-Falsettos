@@ -1,9 +1,12 @@
 TAED2-Falsettos
 ==============================
 
-A Data Science project that uses a cookiecutter template.
+A Data Science project that uses a cookiecutter template. Check the:
 
-Project Organization
+- [Dataset Card](dataset-card.md) 
+- [Model Card](model-card.md)
+
+Project Structure
 ------------
 
     ├── LICENSE
