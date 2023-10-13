@@ -1,12 +1,6 @@
----
-# For reference on model card metadata, see the spec: https://github.com/huggingface/hub-docs/blob/main/modelcard.md?plain=1
-# Doc / guide: https://huggingface.co/docs/hub/model-cards
-{{ card_data }}
----
+# Model Card for HUBERT_00
 
-# Model Card for HUBERT_00{{ model_id | default("Model ID", true) }}
-
-The idea of the models in our case is to predict from a one-second .wav audio file (single spoken English word or background noise) whether it’s noise or a word. So the task is Audio Classification and the sub-task is Keyword Spotting from non-noise audios. 
+The idea of the models in our case is to predict from a one-second .wav audio file (single spoken English word or background noise) whether it is noise or a word. So the task is Audio Classification and the sub-task is Keyword Spotting from non-noise audios. 
 
 ## Model Details
 
