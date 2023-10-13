@@ -25,7 +25,26 @@ from torcheval.metrics.functional import multiclass_f1_score
 
 import torch.nn.functional as F
 
-from src import ROOT_DIR, METRICS_DIR, MODELS_DIR, PROCESSED_DATA_DIR
+#from src import ROOT_DIR, METRICS_DIR, MODELS_DIR, PROCESSED_DATA_DIR
+
+from pathlib import Path
+
+# Això substitueix a src que no chuta ns perk
+from dotenv import load_dotenv
+
+load_dotenv()
+
+ROOT_DIR = Path(Path(__file__).resolve().parent.parent.parent)
+
+RAW_DATA_DIR = ROOT_DIR / "src/data/raw"
+PROCESSED_DATA_DIR = ROOT_DIR / "src/data/processed"
+
+METRICS_DIR = ROOT_DIR / "metrics"
+MODELS_DIR = ROOT_DIR / "src/models"
+
+#---------------------------------------------------------
+
+from mlflow import log_metric
 
 
 def seed_everything(seed):
@@ -57,30 +76,30 @@ class HubertForAudioClassification(nn.Module):
         super().__init__()
 
         self.hubert = HubertModel.from_pretrained("facebook/hubert-base-ls960")
-        
+
         hidden_size = self.hubert.config.hidden_size
 
         self.adaptor = nn.Sequential(
             nn.Linear(hidden_size, adapter_hidden_size),
-            nn.ReLU(True),           
-            nn.Dropout(0.05),            
+            nn.ReLU(True),
+            nn.Dropout(0.05),
             nn.Linear(adapter_hidden_size, hidden_size),
-        )  
-        
+        )
+
         self.classifier = nn.Sequential(
             nn.Linear(hidden_size, adapter_hidden_size),
-            nn.ReLU(True),           
-            nn.Dropout(0.05),            
+            nn.ReLU(True),
+            nn.Dropout(0.05),
             nn.Linear(adapter_hidden_size, 36), # 36 classes
         )
-        
+
     def freeze_feature_encoder(self):
         """
         Calling this function will disable the gradient computation for the feature encoder so that its parameter will
         not be updated during training.
         """
         self.hubert.feature_extractor._freeze_parameters()
-    
+
     def forward(self, x):
         # x shape: (B,E)
         x = self.hubert(x).last_hidden_state
@@ -101,8 +120,8 @@ def train(loader, model, criterion, optimizer, epoch, log_interval, verbose=True
     model.train()
     global_epoch_loss = 0
     samples = 0
-
     for batch_idx, batch in enumerate(loader):
+        print(batch_idx)
         data, target = batch["features"].cuda(), batch["label"].cuda()
         optimizer.zero_grad()
         logits = model(data)
@@ -115,7 +134,10 @@ def train(loader, model, criterion, optimizer, epoch, log_interval, verbose=True
         if verbose and (batch_idx % log_interval == 0):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, samples, len(loader.dataset), 100*samples/len(loader.dataset), global_epoch_loss/samples))
-            
+
+        log_metric("global_epoch_loss", global_epoch_loss, step=batch_idx)
+        log_metric("avg_loss", global_epoch_loss/samples, step=batch_idx)
+
     return global_epoch_loss / samples
 
 
@@ -143,9 +165,11 @@ def val(loader, model, criterion, epoch, num_classes):
             samples += len(target)
 
     F1_score = multiclass_f1_score(input = total_preds, target = total_targets, num_classes = num_classes)
-                
+
     print('Validation Epoch: {} \tMean Loss: {:.6f} / F1-score {:.6f}'.format(epoch, global_epoch_loss/samples, F1_score))
-    
+    log_metric("val_avg_loss", global_epoch_loss/samples, step=batch_idx)
+    log_metric("F1_score", F1_score, step=batch_idx)
+
     return global_epoch_loss / samples, F1_score
 
 
@@ -153,6 +177,7 @@ def val(loader, model, criterion, epoch, num_classes):
 def main():
     # Path of the parameters file
     params_path = Path("params.yaml")
+    params_path = ROOT_DIR / params_path
 
     # Read data preparation parameters
     with open(params_path, "r") as params_file:
@@ -203,13 +228,13 @@ def main():
     iteration = 0
     epoch = 1
     best_epoch = epoch
-        
+
     # training with early stopping
     t0 = time.time()
     while (epoch < params["epochs"] + 1) and (iteration < params["patience"]):
         train_loss = train(train_loader, model, criterion, optimizer, epoch, params["log_interval"])
         val_loss, val_F1 = val(val_loader, model, criterion, epoch, params["num_classes"])
-        
+
         torch.save(model.state_dict(), str(checkpoint_path)+'/model_{:03d}.pt'.format(epoch))
 
         if val_F1 <= best_val_F1:
@@ -246,6 +271,6 @@ def main():
        os.mkdir(final_model_save_path)
     print(os.path.join(ROOT_DIR, 'models', '{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch)))
     torch.save(model.state_dict(), os.path.join(ROOT_DIR, 'models', '{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch)))
-    
+
 
 main()

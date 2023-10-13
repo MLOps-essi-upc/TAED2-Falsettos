@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Usuario/Documents/GitHub/TAED2-Falsettos/src/models/mlruns/0/b7f144aa194b41b2a64cf57f7ea5d5ff/artifacts
+end_time: 1697186544240
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: b7f144aa194b41b2a64cf57f7ea5d5ff
+run_name: useful-croc-647
+run_uuid: b7f144aa194b41b2a64cf57f7ea5d5ff
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1697186516553
+status: 3
+tags: []
+user_id: Usuario
