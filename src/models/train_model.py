@@ -25,24 +25,9 @@ from torcheval.metrics.functional import multiclass_f1_score
 
 import torch.nn.functional as F
 
-#from src import ROOT_DIR, METRICS_DIR, MODELS_DIR, PROCESSED_DATA_DIR
+from src import ROOT_DIR, METRICS_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 
 from pathlib import Path
-
-# Això substitueix a src que no chuta ns perk
-from dotenv import load_dotenv
-
-load_dotenv()
-
-ROOT_DIR = Path(Path(__file__).resolve().parent.parent.parent)
-
-RAW_DATA_DIR = ROOT_DIR / "src/data/raw"
-PROCESSED_DATA_DIR = ROOT_DIR / "src/data/processed"
-
-METRICS_DIR = ROOT_DIR / "metrics"
-MODELS_DIR = ROOT_DIR / "src/models"
-
-#---------------------------------------------------------
 
 from mlflow import log_metric
 
@@ -121,7 +106,6 @@ def train(loader, model, criterion, optimizer, epoch, log_interval, verbose=True
     global_epoch_loss = 0
     samples = 0
     for batch_idx, batch in enumerate(loader):
-        print(batch_idx)
         data, target = batch["features"].cuda(), batch["label"].cuda()
         optimizer.zero_grad()
         logits = model(data)
@@ -163,11 +147,13 @@ def val(loader, model, criterion, epoch, num_classes):
             loss = criterion(logits, target)
             global_epoch_loss += loss.data.item() * len(target)
             samples += len(target)
+            log_metric("val_avg_loss", global_epoch_loss/samples, step=batch_idx)
+
 
     F1_score = multiclass_f1_score(input = total_preds, target = total_targets, num_classes = num_classes)
 
     print('Validation Epoch: {} \tMean Loss: {:.6f} / F1-score {:.6f}'.format(epoch, global_epoch_loss/samples, F1_score))
-    log_metric("val_avg_loss", global_epoch_loss/samples, step=batch_idx)
+
     log_metric("F1_score", F1_score, step=batch_idx)
 
     return global_epoch_loss / samples, F1_score
