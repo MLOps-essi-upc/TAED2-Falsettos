@@ -3,7 +3,7 @@ prepare:
   total_labels: 36 # for one hot encoding
   feature_extractor: "facebook/hubert-base-ls960"
 train:
-  algorithm_name: "Hubert Classifier"
+  algorithm_name: "Hubert_Classifier"
   random_state: 33 #seed for reproducibility
   num_classes: 36 # total possible classifications
 
@@ -13,7 +13,7 @@ train:
   optimizer: 'adam' # optimization method: sgd | adam
   adapter_hidden_size: 128 # model hyperparameter
 
-  epochs: 1  # maximum number of epochs to train
+  epochs: 3  # maximum number of epochs to train
   patience: 5 # how many epochs of no loss improvement should we wait before stop training
   log_interval: 15 # how many batches to wait before logging training status
   
