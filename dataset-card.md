@@ -1,26 +1,3 @@
----
-annotations_creators:
-- crowdsourced
-language:
-- en
-language_creators:
-- crowdsourced
-license:
-- cc-by-4.0
-multilinguality:
-- monolingual
-pretty_name: Speech Commands
-size_categories:
-- 10K<n<100K
-source_datasets:
-- original
-tags: []
-task_categories:
-- audio-classification
-task_ids:
-- keyword-spotting
----
-
 # Dataset Card for SpeechCommands
 
 ## Table of Contents
@@ -192,7 +169,7 @@ Labels are the list of words prepared in advances. Speakers were prompted for in
 
 #### Who are the annotators?
 
-[More Information Needed]
+There is no information about the annotators of the dataset.
 
 ### Personal and Sensitive Information
 
@@ -202,21 +179,21 @@ The dataset consists of people who have donated their voice online. You agree to
 
 ### Social Impact of Dataset
 
-[More Information Needed]
+The dataset can help to develop speech recognition or generative speech technologies, which can be useful for society. However, it is important that these technologies are used for good purposes.
 
 ### Discussion of Biases
 
-[More Information Needed]
+Some specific biases that could be reflected in the data are the gender bias, the age bias, and the accent bias. These biases could appear if the dataset is not diverse (for example, people from the same gender, with similar ages and the same accent). So, to avoid that, during the data collection the diversity of the data should be ensured.
 
 ### Other Known Limitations
 
-[More Information Needed]
+There are no other known limitations of the dataset.
 
 ## Additional Information
 
 ### Dataset Curators
 
-[More Information Needed]
+There is no information about the curators of the dataset.
 
 ### Licensing Information
 
