@@ -90,5 +90,6 @@ target/
 .mypy_cache/
 
 # Model versioning files
-models/
-mlruns/
+/models/
+/mlruns/
+```
