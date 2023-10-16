@@ -45,7 +45,7 @@ def data_loading(input_folder_path, batch_size):
     audio_dataset = datasets.load_from_disk(input_folder_path)
     audio_dataset.set_format(type='torch', columns=['key', 'features', 'label'])
      # Create the dataloaders
-    train_loader = DataLoader(dataset=audio_dataset["validation"], batch_size=batch_size, shuffle=True, drop_last=True)
+    train_loader = DataLoader(dataset=audio_dataset["train"], batch_size=batch_size, shuffle=True, drop_last=True)
     val_loader = DataLoader(dataset=audio_dataset["validation"], batch_size=batch_size, shuffle=True, drop_last=True)
 
     print('Training set has {} instances'.format(len(audio_dataset["train"])))
@@ -170,7 +170,6 @@ def main():
     print("------- Training of",params["algorithm_name"],"-------")
 
     # Set Mlflow experiment
-    start_run()
     set_tracking_uri('https://dagshub.com/armand-07/TAED2-Falsettos.mlflow')
     log_param('mode', 'training')
     log_params(params)
@@ -185,7 +184,6 @@ def main():
     model.freeze_feature_encoder()
     for param in model.hubert.encoder.parameters():
         param.requires_grad = False
-    model.hubert
 
     # Define criterion
     criterion = nn.CrossEntropyLoss(reduction = 'mean')
@@ -273,6 +271,5 @@ def main():
     log_metric("Best F1 score", best_val_F1)
 
     log_artifact(os.path.join(ROOT_DIR, 'models'), "emissions.csv")
-    end_run()
 
 main()

@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/c4d338db41a1422a98d5ddbbb520e1e4/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c4d338db41a1422a98d5ddbbb520e1e4
+run_name: useful-croc-647
+run_uuid: c4d338db41a1422a98d5ddbbb520e1e4
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1697486023813
+status: 1
+tags: []
+user_id: armand-07

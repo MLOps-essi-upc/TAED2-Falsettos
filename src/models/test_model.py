@@ -139,7 +139,6 @@ def main():
     print("------- Testing of",params["algorithm_name"],"-------")
 
     # Set Mlflow experiment
-    start_run()
     set_tracking_uri('https://dagshub.com/armand-07/TAED2-Falsettos.mlflow')
     log_param('mode', 'testing')
     log_params(params)
@@ -149,22 +148,19 @@ def main():
     # ============== #
     # MODEL CREATION #
     # ============== #
-    model = HubertForAudioClassification(adapter_hidden_size = params["adapter_hidden_size"])
-    model = model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'models', '{}_bestmodel.pt'.format(params["algorithm_name"]))))
+    model = HubertForAudioClassification(adapter_hidden_size=params["adapter_hidden_size"])
+    # Load the state dictionary and then assign it to the model
+    PATH = os.path.join(ROOT_DIR, 'models', '{}_bestmodel.pt'.format(params["algorithm_name"]))
+    model.load_state_dict(torch.load(PATH), strict=False)
     
-   
-
     # Define criterion
     criterion = nn.CrossEntropyLoss(reduction = 'mean')
-
-    
 
     # Move the model to GPU
     if torch.cuda.is_available():
         print('Using CUDA with {0} GPUs'.format(torch.cuda.device_count()))
+        device = torch.device("cuda")
     model.cuda()
-
-
 
     # ============== #
     # MODEL TESTING  #
@@ -176,7 +172,6 @@ def main():
     log_metric("Best F1-score", test_F1)
 
     print(f'F1-Score: {test_F1*100:.1f}')
-    end_run()
 
 
 main()
