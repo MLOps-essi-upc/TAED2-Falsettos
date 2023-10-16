@@ -17,4 +17,13 @@ stages:
     - train
     outs:
     - models/
+  test: 
+    cmd: python -m src.models.test_model
+    deps:
+    - src/data/processed/
+    - models
+    - src/models/test_model.py
+    params:
+    - train
+
 

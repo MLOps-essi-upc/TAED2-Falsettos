@@ -29,8 +29,8 @@ stages:
       size: 6400265348
       nfiles: 21
     - path: src/models/train_model.py
-      md5: 4f5591e98636c4aef98fc928d80a5762
-      size: 8943
+      md5: 600c89dbbc5da2c430c50b69a14ce4ed
+      size: 9848
     params:
       params.yaml:
         train:
@@ -47,6 +47,6 @@ stages:
           log_interval: 15
     outs:
     - path: models/
-      md5: eb3af6f7d6079f1668b58d616f4cd49d.dir
-      size: 378782723
-      nfiles: 1
+      md5: 9a03e6b62d0da962cee1c2e5ce1e3f3a.dir
+      size: 378782624
+      nfiles: 2

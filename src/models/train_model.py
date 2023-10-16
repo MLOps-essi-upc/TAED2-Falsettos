@@ -8,15 +8,12 @@ from functools import lru_cache
 import os
 import time
 
-import pandas as pd
 import numpy as np
-import scipy.fftpack
 import scipy.linalg
 import torch
 import torch.utils.data as data
 import torch.nn as nn
 import torch.optim as optim
-import math
 import random
 
 from transformers import Wav2Vec2FeatureExtractor, HubertModel
@@ -25,11 +22,12 @@ from torcheval.metrics.functional import multiclass_f1_score
 
 import torch.nn.functional as F
 
-from src import ROOT_DIR, METRICS_DIR, MODELS_DIR, PROCESSED_DATA_DIR
+from src import ROOT_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 
 from pathlib import Path
 
-from mlflow import log_metric
+from mlflow import log_params, log_param, log_metric, log_artifact, set_tracking_uri, start_run, end_run
+from codecarbon import EmissionsTracker
 
 
 def seed_everything(seed):
@@ -47,7 +45,7 @@ def data_loading(input_folder_path, batch_size):
     audio_dataset = datasets.load_from_disk(input_folder_path)
     audio_dataset.set_format(type='torch', columns=['key', 'features', 'label'])
      # Create the dataloaders
-    train_loader = DataLoader(dataset=audio_dataset["train"], batch_size=batch_size, shuffle=True, drop_last=True)
+    train_loader = DataLoader(dataset=audio_dataset["validation"], batch_size=batch_size, shuffle=True, drop_last=True)
     val_loader = DataLoader(dataset=audio_dataset["validation"], batch_size=batch_size, shuffle=True, drop_last=True)
 
     print('Training set has {} instances'.format(len(audio_dataset["train"])))
@@ -119,9 +117,6 @@ def train(loader, model, criterion, optimizer, epoch, log_interval, verbose=True
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, samples, len(loader.dataset), 100*samples/len(loader.dataset), global_epoch_loss/samples))
 
-        log_metric("global_epoch_loss", global_epoch_loss, step=batch_idx)
-        log_metric("avg_loss", global_epoch_loss/samples, step=batch_idx)
-
     return global_epoch_loss / samples
 
 
@@ -147,14 +142,11 @@ def val(loader, model, criterion, epoch, num_classes):
             loss = criterion(logits, target)
             global_epoch_loss += loss.data.item() * len(target)
             samples += len(target)
-            log_metric("val_avg_loss", global_epoch_loss/samples, step=batch_idx)
 
 
     F1_score = multiclass_f1_score(input = total_preds, target = total_targets, num_classes = num_classes)
 
     print('Validation Epoch: {} \tMean Loss: {:.6f} / F1-score {:.6f}'.format(epoch, global_epoch_loss/samples, F1_score))
-
-    log_metric("F1_score", F1_score, step=batch_idx)
 
     return global_epoch_loss / samples, F1_score
 
@@ -177,6 +169,12 @@ def main():
     seed_everything(params["random_state"])
     print("------- Training of",params["algorithm_name"],"-------")
 
+    # Set Mlflow experiment
+    start_run()
+    set_tracking_uri('https://dagshub.com/armand-07/TAED2-Falsettos.mlflow')
+    log_param('mode', 'training')
+    log_params(params)
+
     train_loader, val_loader = data_loading (PROCESSED_DATA_DIR, params["batch_size"]) # data loading
 
     # ============== #
@@ -197,6 +195,7 @@ def main():
     else:
         optimizer = optim.SGD(model.parameters(), lr=params["lr"], momentum=params["momentum"])
 
+    
 
     # Move the model to GPU
     if torch.cuda.is_available():
@@ -209,6 +208,12 @@ def main():
     # MODEL TRAINING #
     # ============== #
     print("------------- Training phase ----------------")
+    # Define the emissions tracker
+    tracker = EmissionsTracker(measure_power_secs=10, output_dir=os.path.join(ROOT_DIR, 'models'), log_level= "warning") # measure power every 10 seconds
+    tracker.start()
+    
+
+    # Define the training parameters
     checkpoint_path = Path(str(MODELS_DIR)+"/checkpoints")
     best_val_F1 = 0.0
     iteration = 0
@@ -220,6 +225,10 @@ def main():
     while (epoch < params["epochs"] + 1) and (iteration < params["patience"]):
         train_loss = train(train_loader, model, criterion, optimizer, epoch, params["log_interval"])
         val_loss, val_F1 = val(val_loader, model, criterion, epoch, params["num_classes"])
+
+        log_metric("Loss evolution in training", train_loss, step=epoch)
+        log_metric("Loss evolution in validation", val_loss, step=epoch)
+        log_metric("F1-score in validation", val_F1, step=epoch)
 
         torch.save(model.state_dict(), str(checkpoint_path)+'/model_{:03d}.pt'.format(epoch))
 
@@ -256,7 +265,14 @@ def main():
     if not os.path.exists(final_model_save_path):
        os.mkdir(final_model_save_path)
     print(os.path.join(ROOT_DIR, 'models', '{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch)))
-    torch.save(model.state_dict(), os.path.join(ROOT_DIR, 'models', '{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch)))
+    torch.save(model.state_dict(), os.path.join(ROOT_DIR, 'models', '{}_bestmodel.pt'.format(params["algorithm_name"])))
 
+    emissions: float = tracker.stop()
+    # Log metrics to Mlflow
+    log_metric("Emissions in CO2 kg", float(emissions))
+    log_metric("Best F1 score", best_val_F1)
+
+    log_artifact(os.path.join(ROOT_DIR, 'models'), "emissions.csv")
+    end_run()
 
 main()
