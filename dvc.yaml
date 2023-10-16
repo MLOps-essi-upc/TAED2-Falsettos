@@ -25,5 +25,3 @@ stages:
     - src/models/test_model.py
     params:
     - train
-
-
