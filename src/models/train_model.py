@@ -41,7 +41,7 @@ def data_loading(input_folder_path, batch_size):
     audio_dataset = datasets.load_from_disk(input_folder_path)
     audio_dataset.set_format(type='torch', columns=['key', 'features', 'label'])
      # Create the dataloaders
-    train_loader = DataLoader(dataset=audio_dataset["train"], batch_size=batch_size, shuffle=True, drop_last=True)
+    train_loader = DataLoader(dataset=audio_dataset["validation"], batch_size=batch_size, shuffle=True, drop_last=True)
     val_loader = DataLoader(dataset=audio_dataset["validation"], batch_size=batch_size, shuffle=True, drop_last=True)
 
     print('Training set has {} instances'.format(len(audio_dataset["train"])))
@@ -205,10 +205,13 @@ def main():
     # Define the emissions tracker
     tracker = EmissionsTracker(measure_power_secs=10, output_dir=os.path.join(MODELS_DIR, 'final_model'), log_level= "warning") # measure power every 10 seconds
     tracker.start()
-    
+
+    #Define saving checkpoints path
+    checkpoint_path = Path(str(MODELS_DIR)+"/checkpoints")
+    if not os.path.exists(checkpoint_path):
+       os.mkdir(checkpoint_path)
 
     # Define the training parameters
-    checkpoint_path = Path(str(MODELS_DIR)+"/checkpoints")
     best_val_F1 = 0.0
     iteration = 0
     epoch = 1
