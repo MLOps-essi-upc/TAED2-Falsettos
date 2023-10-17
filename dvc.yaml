@@ -21,7 +21,7 @@ stages:
     cmd: python -m src.models.test_model
     deps:
     - src/data/processed/
-    - models
+    - src/models/final_model/
     - src/models/test_model.py
     params:
     - train

@@ -2,14 +2,10 @@ import datasets
 from pathlib import Path
 import yaml
 
-
-from types import SimpleNamespace
-from functools import lru_cache
 import os
 import time
 
 import numpy as np
-import scipy.linalg
 import torch
 import torch.utils.data as data
 import torch.nn as nn
@@ -207,7 +203,7 @@ def main():
     # ============== #
     print("------------- Training phase ----------------")
     # Define the emissions tracker
-    tracker = EmissionsTracker(measure_power_secs=10, output_dir=os.path.join(ROOT_DIR, 'models'), log_level= "warning") # measure power every 10 seconds
+    tracker = EmissionsTracker(measure_power_secs=10, output_dir=os.path.join(MODELS_DIR, 'final_model'), log_level= "warning") # measure power every 10 seconds
     tracker.start()
     
 
@@ -259,17 +255,17 @@ def main():
     model.load_state_dict(torch.load(str(checkpoint_path)+'/model_{:03d}.pt'.format(epoch)))
 
     # Save model
-    final_model_save_path = os.path.join(ROOT_DIR, 'models')
+    final_model_save_path = os.path.join(MODELS_DIR, 'final_model')
     if not os.path.exists(final_model_save_path):
        os.mkdir(final_model_save_path)
-    print(os.path.join(ROOT_DIR, 'models', '{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch)))
-    torch.save(model.state_dict(), os.path.join(ROOT_DIR, 'models', '{}_bestmodel.pt'.format(params["algorithm_name"])))
+    print(os.path.join(MODELS_DIR, 'final_model', '{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch)))
+    torch.save(model.state_dict(), os.path.join(MODELS_DIR, 'final_model', '{}_bestmodel.pt'.format(params["algorithm_name"])))
 
     emissions: float = tracker.stop()
     # Log metrics to Mlflow
     log_metric("Emissions in CO2 kg", float(emissions))
     log_metric("Best F1 score", best_val_F1)
 
-    log_artifact(os.path.join(ROOT_DIR, 'models'), "emissions.csv")
+    log_artifact(os.path.join(MODELS_DIR, 'final_model'), "emissions.csv")
 
 main()

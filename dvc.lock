@@ -3,13 +3,13 @@ stages:
   prepare:
     cmd: python -m src.data.preprocess_dataset
     deps:
+    - path: data/raw/
+      md5: d2ebab039894f008ac1cd57c99669a01.dir
+      size: 3130894446
+      nfiles: 3
     - path: src/data/preprocess_dataset.py
       md5: ab572d0ff8323160f20de0bcc04e788a
       size: 2879
-    - path: src/data/raw/
-      md5: 281768d3515ed704b2d106ed7517217d.dir
-      size: 3157509406
-      nfiles: 15
     params:
       params.yaml:
         prepare:
@@ -29,8 +29,8 @@ stages:
       size: 6400265348
       nfiles: 21
     - path: src/models/train_model.py
-      md5: 5f1d1ff1c28c026b1274e6603aa8d6f5
-      size: 9825
+      md5: e2a4562be6a5a54e6057057a24fb2d14
+      size: 9769
     params:
       params.yaml:
         train:
@@ -46,21 +46,21 @@ stages:
           patience: 5
           log_interval: 15
     outs:
-    - path: models/
-      md5: 84f9e3e8202a1db40577b45eae44f0af.dir
-      size: 378782624
+    - path: src/models/final_model/
+      md5: 32a512290a41d6a550e40d8fdebea855.dir
+      size: 378782619
       nfiles: 2
   test:
     cmd: python -m src.models.test_model
     deps:
-    - path: models
-      md5: 84f9e3e8202a1db40577b45eae44f0af.dir
-      size: 378782624
-      nfiles: 2
     - path: src/data/processed/
       md5: 71e19ba3eece3a035a491a870ffb331e.dir
       size: 6400265348
       nfiles: 21
+    - path: src/models/final_model/
+      md5: 32a512290a41d6a550e40d8fdebea855.dir
+      size: 378782619
+      nfiles: 2
     - path: src/models/test_model.py
       md5: a8ad07c53962336b6281ef75e4863c88
       size: 5818

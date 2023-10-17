@@ -6,7 +6,7 @@ load_dotenv()
 
 ROOT_DIR = Path(Path(__file__).resolve().parent.parent)
 
-RAW_DATA_DIR = ROOT_DIR / "src/data/raw"
+RAW_DATA_DIR = ROOT_DIR / "data/raw"
 PROCESSED_DATA_DIR = ROOT_DIR / "src/data/processed"
 
 METRICS_DIR = ROOT_DIR / "metrics"
