@@ -170,8 +170,6 @@ def main():
     mlflow.log_metric("Average Loss Test", test_loss)
     mlflow.log_metric("Best F1-score", test_F1)
 
-    print(f'F1-Score: {test_F1*100:.1f}%')
-
     mlflow.pytorch.log_model(model, "model")
 
 
