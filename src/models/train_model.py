@@ -22,7 +22,7 @@ from src import ROOT_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 
 from pathlib import Path
 
-from mlflow import log_params, log_param, log_metric, log_artifact, set_tracking_uri, start_run, end_run
+import mlflow
 from codecarbon import EmissionsTracker
 
 
@@ -41,7 +41,7 @@ def data_loading(input_folder_path, batch_size):
     audio_dataset = datasets.load_from_disk(input_folder_path)
     audio_dataset.set_format(type='torch', columns=['key', 'features', 'label'])
      # Create the dataloaders
-    train_loader = DataLoader(dataset=audio_dataset["train"], batch_size=batch_size, shuffle=True, drop_last=True)
+    train_loader = DataLoader(dataset=audio_dataset["validation"], batch_size=batch_size, shuffle=True, drop_last=True)
     val_loader = DataLoader(dataset=audio_dataset["validation"], batch_size=batch_size, shuffle=True, drop_last=True)
 
     print('Training set has {} instances'.format(len(audio_dataset["train"])))
@@ -157,7 +157,7 @@ def main():
     with open(params_path, "r") as params_file:
         try:
             params = yaml.safe_load(params_file)
-            params = params["train"]
+            params = params["model"]
         except yaml.YAMLError as exc:
             print(exc)
 
@@ -166,9 +166,9 @@ def main():
     print("------- Training of",params["algorithm_name"],"-------")
 
     # Set Mlflow experiment
-    set_tracking_uri('https://dagshub.com/armand-07/TAED2-Falsettos.mlflow')
-    log_param('mode', 'training')
-    log_params(params)
+    mlflow.set_tracking_uri('https://dagshub.com/armand-07/TAED2-Falsettos.mlflow')
+    mlflow.log_param('mode', 'training')
+    mlflow.log_params(params)
 
     train_loader, val_loader = data_loading (PROCESSED_DATA_DIR, params["batch_size"]) # data loading
 
@@ -205,10 +205,13 @@ def main():
     # Define the emissions tracker
     tracker = EmissionsTracker(measure_power_secs=10, output_dir=os.path.join(MODELS_DIR, 'final_model'), log_level= "warning") # measure power every 10 seconds
     tracker.start()
-    
+
+    #Define saving checkpoints path
+    checkpoint_path = Path(str(MODELS_DIR)+"/checkpoints")
+    if not os.path.exists(checkpoint_path):
+       os.mkdir(checkpoint_path)
 
     # Define the training parameters
-    checkpoint_path = Path(str(MODELS_DIR)+"/checkpoints")
     best_val_F1 = 0.0
     iteration = 0
     epoch = 1
@@ -220,9 +223,9 @@ def main():
         train_loss = train(train_loader, model, criterion, optimizer, epoch, params["log_interval"])
         val_loss, val_F1 = val(val_loader, model, criterion, epoch, params["num_classes"])
 
-        log_metric("Loss evolution in training", train_loss, step=epoch)
-        log_metric("Loss evolution in validation", val_loss, step=epoch)
-        log_metric("F1-score in validation", val_F1, step=epoch)
+        mlflow.log_metric("Loss evolution in training", train_loss, step=epoch)
+        mlflow.log_metric("Loss evolution in validation", val_loss, step=epoch)
+        mlflow.log_metric("F1-score in validation", val_F1, step=epoch)
 
         torch.save(model.state_dict(), str(checkpoint_path)+'/model_{:03d}.pt'.format(epoch))
 
@@ -263,9 +266,11 @@ def main():
 
     emissions: float = tracker.stop()
     # Log metrics to Mlflow
-    log_metric("Emissions in CO2 kg", float(emissions))
-    log_metric("Best F1 score", best_val_F1)
+    mlflow.log_metric("Emissions in CO2 kg", float(emissions))
+    mlflow.log_metric("Best F1 score", best_val_F1)
 
-    log_artifact(os.path.join(MODELS_DIR, 'final_model'), "emissions.csv")
+    # Log artifacts to Mlflow
+    mlflow.log_artifact(os.path.join(MODELS_DIR, 'final_model', 'emissions.csv'), 'metrics')
+    mlflow.pytorch.log_model(model, "model")
 
 main()

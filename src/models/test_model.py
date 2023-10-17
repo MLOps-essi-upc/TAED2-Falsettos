@@ -19,7 +19,7 @@ from src import ROOT_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 
 from pathlib import Path
 
-from mlflow import log_params, log_param, log_metric, set_tracking_uri, start_run, end_run
+import mlflow
 
 
 def seed_everything(seed):
@@ -130,7 +130,7 @@ def main():
     with open(params_path, "r") as params_file:
         try:
             params = yaml.safe_load(params_file)
-            params = params["train"]
+            params = params["model"]
         except yaml.YAMLError as exc:
             print(exc)
 
@@ -139,9 +139,9 @@ def main():
     print("------- Testing of",params["algorithm_name"],"-------")
 
     # Set Mlflow experiment
-    set_tracking_uri('https://dagshub.com/armand-07/TAED2-Falsettos.mlflow')
-    log_param('mode', 'testing')
-    log_params(params)
+    mlflow.set_tracking_uri('https://dagshub.com/armand-07/TAED2-Falsettos.mlflow')
+    mlflow.log_param('mode', 'testing')
+    mlflow.log_params(params)
 
     test_loader = data_loading (PROCESSED_DATA_DIR, params["batch_size"]) # data loading
 
@@ -150,7 +150,7 @@ def main():
     # ============== #
     model = HubertForAudioClassification(adapter_hidden_size=params["adapter_hidden_size"])
     # Load the state dictionary and then assign it to the model
-    PATH = os.path.join(ROOT_DIR, 'models', '{}_bestmodel.pt'.format(params["algorithm_name"]))
+    PATH = os.path.join(MODELS_DIR,'final_model', '{}_bestmodel.pt'.format(params["algorithm_name"]))
     model.load_state_dict(torch.load(PATH), strict=False)
     
     # Define criterion
@@ -159,7 +159,6 @@ def main():
     # Move the model to GPU
     if torch.cuda.is_available():
         print('Using CUDA with {0} GPUs'.format(torch.cuda.device_count()))
-        device = torch.device("cuda")
     model.cuda()
 
     # ============== #
@@ -168,10 +167,10 @@ def main():
     print("------------- Testing phase ----------------")
 
     test_loss, test_F1 = test(test_loader, model, criterion, params["num_classes"])
-    log_metric("Average Loss Test", test_loss)
-    log_metric("Best F1-score", test_F1)
+    mlflow.log_metric("Average Loss Test", test_loss)
+    mlflow.log_metric("Best F1-score", test_F1)
 
-    print(f'F1-Score: {test_F1*100:.1f}')
+    mlflow.pytorch.log_model(model, "model")
 
 
 main()

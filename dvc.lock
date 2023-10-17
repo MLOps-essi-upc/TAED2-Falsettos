@@ -4,36 +4,36 @@ stages:
     cmd: python -m src.data.preprocess_dataset
     deps:
     - path: data/raw/
-      md5: d2ebab039894f008ac1cd57c99669a01.dir
-      size: 3130894446
-      nfiles: 3
+      md5: 281768d3515ed704b2d106ed7517217d.dir
+      size: 3157509406
+      nfiles: 15
     - path: src/data/preprocess_dataset.py
-      md5: ab572d0ff8323160f20de0bcc04e788a
+      md5: 40818fa035b4521d03b6003b3f083657
       size: 2879
     params:
       params.yaml:
-        prepare:
+        dataset:
           audio_length: 1
           total_labels: 36
           feature_extractor: facebook/hubert-base-ls960
     outs:
-    - path: src/data/processed/
+    - path: data/processed/
       md5: 71e19ba3eece3a035a491a870ffb331e.dir
       size: 6400265348
       nfiles: 21
   train:
     cmd: python -m src.models.train_model
     deps:
-    - path: src/data/processed/
+    - path: data/processed/
       md5: 71e19ba3eece3a035a491a870ffb331e.dir
       size: 6400265348
       nfiles: 21
     - path: src/models/train_model.py
-      md5: e2a4562be6a5a54e6057057a24fb2d14
-      size: 9769
+      md5: 86f2eb375139d7eeb23c402c17373d0b
+      size: 9946
     params:
       params.yaml:
-        train:
+        model:
           algorithm_name: Hubert_Classifier
           random_state: 33
           num_classes: 36
@@ -42,31 +42,31 @@ stages:
           momentum: 0.9
           optimizer: adam
           adapter_hidden_size: 128
-          epochs: 3
+          epochs: 1
           patience: 5
           log_interval: 15
     outs:
-    - path: src/models/final_model/
-      md5: 32a512290a41d6a550e40d8fdebea855.dir
-      size: 378782619
+    - path: models/final_model/
+      md5: 721bbc925264f948d9704cf792c61436.dir
+      size: 378782622
       nfiles: 2
   test:
     cmd: python -m src.models.test_model
     deps:
-    - path: src/data/processed/
+    - path: data/processed/
       md5: 71e19ba3eece3a035a491a870ffb331e.dir
       size: 6400265348
       nfiles: 21
-    - path: src/models/final_model/
-      md5: 32a512290a41d6a550e40d8fdebea855.dir
-      size: 378782619
+    - path: models/final_model/
+      md5: 721bbc925264f948d9704cf792c61436.dir
+      size: 378782622
       nfiles: 2
     - path: src/models/test_model.py
-      md5: a8ad07c53962336b6281ef75e4863c88
-      size: 5818
+      md5: cee461515b305052860d555f6476e7d9
+      size: 5792
     params:
       params.yaml:
-        train:
+        model:
           algorithm_name: Hubert_Classifier
           random_state: 33
           num_classes: 36
@@ -75,6 +75,6 @@ stages:
           momentum: 0.9
           optimizer: adam
           adapter_hidden_size: 128
-          epochs: 3
+          epochs: 1
           patience: 5
           log_interval: 15
