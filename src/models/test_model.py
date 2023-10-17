@@ -150,7 +150,7 @@ def main():
     # ============== #
     model = HubertForAudioClassification(adapter_hidden_size=params["adapter_hidden_size"])
     # Load the state dictionary and then assign it to the model
-    PATH = os.path.join(ROOT_DIR, 'models', '{}_bestmodel.pt'.format(params["algorithm_name"]))
+    PATH = os.path.join(ROOT_DIR, 'models','final_model', '{}_bestmodel.pt'.format(params["algorithm_name"]))
     model.load_state_dict(torch.load(PATH), strict=False)
     
     # Define criterion
@@ -171,7 +171,9 @@ def main():
     log_metric("Average Loss Test", test_loss)
     log_metric("Best F1-score", test_F1)
 
-    print(f'F1-Score: {test_F1*100:.1f}')
+    print(f'F1-Score: {test_F1*100:.1f}%')
+
+    mlflow.pytorch.log_model(model, "model")
 
 
 main()
