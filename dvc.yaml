@@ -5,23 +5,23 @@ stages:
     - data/raw/
     - src/data/preprocess_dataset.py
     params:
-    - prepare
+    - dataset
     outs:
-    - src/data/processed/
+    - data/processed/
   train:
     cmd: python -m src.models.train_model
     deps:
-    - src/data/processed/
+    - data/processed/
     - src/models/train_model.py
     params:
-    - train
+    - model
     outs:
-    - src/models/final_model/
+    - models/final_model/
   test: 
     cmd: python -m src.models.test_model
     deps:
-    - src/data/processed/
-    - src/models/final_model/
+    - data/processed/
+    - models/final_model/
     - src/models/test_model.py
     params:
-    - train
+    - model

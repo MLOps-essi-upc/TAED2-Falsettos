@@ -1,8 +1,8 @@
-prepare:
+dataset:
   audio_length: 1 # audio length in sec
   total_labels: 36 # for one hot encoding
   feature_extractor: "facebook/hubert-base-ls960"
-train:
+model:
   algorithm_name: "Hubert_Classifier"
   random_state: 33 #seed for reproducibility
   num_classes: 36 # total possible classifications

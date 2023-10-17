@@ -157,7 +157,7 @@ def main():
     with open(params_path, "r") as params_file:
         try:
             params = yaml.safe_load(params_file)
-            params = params["train"]
+            params = params["model"]
         except yaml.YAMLError as exc:
             print(exc)
 

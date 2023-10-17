@@ -39,7 +39,7 @@ def main():
     with open(params_path, "r") as params_file:
         try:
             params = yaml.safe_load(params_file)
-            params = params["prepare"]
+            params = params["dataset"]
         except yaml.YAMLError as exc:
             print(exc)
 
