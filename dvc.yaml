@@ -2,7 +2,7 @@ stages:
   prepare:
     cmd: python -m src.data.preprocess_dataset
     deps:
-    - src/data/raw/
+    - data/raw/
     - src/data/preprocess_dataset.py
     params:
     - prepare
@@ -16,7 +16,7 @@ stages:
     params:
     - train
     outs:
-    - models/
+    - src/models/final_model/
   test: 
     cmd: python -m src.models.test_model
     deps:
