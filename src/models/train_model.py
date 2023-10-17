@@ -267,7 +267,7 @@ def main():
     emissions: float = tracker.stop()
     # Log metrics to Mlflow
     mlflow.log_metric("Emissions in CO2 kg", float(emissions))
-    mlflow.log_metric("Best F1 score", best_val_F1)
+    mlflow.log_metric("Best F1-score", best_val_F1)
 
     # Log artifacts to Mlflow
     mlflow.log_artifact(os.path.join(MODELS_DIR, 'final_model', 'emissions.csv'), 'metrics')

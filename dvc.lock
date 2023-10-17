@@ -62,8 +62,8 @@ stages:
       size: 378782622
       nfiles: 2
     - path: src/models/test_model.py
-      md5: cee461515b305052860d555f6476e7d9
-      size: 5792
+      md5: 92c953c9804c61028ac78cb5151c4c57
+      size: 5746
     params:
       params.yaml:
         model:
