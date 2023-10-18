@@ -7,6 +7,8 @@ import datasets
 import numpy as np
 from transformers import Wav2Vec2FeatureExtractor
 import torch
+import pandas as pd
+import os
 
 
 def preprocess_data(data, feature_extractor, total_labels, audio_length):
@@ -50,7 +52,9 @@ def main():
     feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(params["feature_extractor"]) # Wav2Vec2 feature extractor
 
     dict_predatsplit = {} # to store all three splits of the dataset after preprocessing
+    df_great_expectations = pd.DataFrame() 
     for split, dataset_split in audio_dataset.items():
+        df_great_expectations = pd.concat([df_great_expectations, dataset_split.to_pandas()])
         print("Preprocessing the data split: ", split, ", with length: ", len(dataset_split), sep = "")
         preprocessed_datsplit = [None]*len(dataset_split) # to store the preprocessed data for each split
         for i in range(len(dataset_split)):
@@ -63,6 +67,13 @@ def main():
     audio_dataset_preprocessed = datasets.DatasetDict(dict_predatsplit)
     print("New preprocessed dataset:", audio_dataset_preprocessed)
     audio_dataset_preprocessed.save_to_disk(PROCESSED_DATA_DIR)
+
+    print("------------ Great expectations -------------")
+    df_great_expectations = df_great_expectations.reset_index(drop=True)
+    print(df_great_expectations)
+    print(len(df_great_expectations))
+
+    
 
 
 main()
