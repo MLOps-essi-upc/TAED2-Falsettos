@@ -29,7 +29,7 @@ stages:
       size: 6400265348
       nfiles: 21
     - path: src/models/train_model.py
-      md5: 86f2eb375139d7eeb23c402c17373d0b
+      md5: a7b2ca3bf6fe09669cfc9699b41344c8
       size: 9946
     params:
       params.yaml:
@@ -47,8 +47,8 @@ stages:
           log_interval: 15
     outs:
     - path: models/final_model/
-      md5: 721bbc925264f948d9704cf792c61436.dir
-      size: 378782622
+      md5: b33068d6e9033cc7e2a47de04e88956f.dir
+      size: 378782624
       nfiles: 2
   test:
     cmd: python -m src.models.test_model
@@ -58,8 +58,8 @@ stages:
       size: 6400265348
       nfiles: 21
     - path: models/final_model/
-      md5: 721bbc925264f948d9704cf792c61436.dir
-      size: 378782622
+      md5: b33068d6e9033cc7e2a47de04e88956f.dir
+      size: 378782624
       nfiles: 2
     - path: src/models/test_model.py
       md5: 92c953c9804c61028ac78cb5151c4c57
