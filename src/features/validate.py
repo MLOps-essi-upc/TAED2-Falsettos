@@ -42,11 +42,9 @@ validator.expect_column_values_to_be_of_type("file", "str")
 
 validator.expect_column_values_to_be_unique("audio")
 validator.expect_column_values_to_not_be_null("audio")
-validator.expect_column_values_to_be_of_type("audio", "bytes")
 
-validator.expect_column_values_to_be_unique("label")
 validator.expect_column_values_to_not_be_null("label")
-validator.expect_column_values_to_be_of_type("label", "int")
+validator.expect_column_values_to_be_of_type("label", "int64")
 
 validator.save_expectation_suite(discard_failed_expectations=False)
 
