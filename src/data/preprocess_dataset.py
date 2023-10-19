@@ -66,11 +66,12 @@ def main():
     print("------------- Dataset saving ----------------")
     audio_dataset_preprocessed = datasets.DatasetDict(dict_predatsplit)
     print("New preprocessed dataset:", audio_dataset_preprocessed)
+    if not os.path.exists(PROCESSED_DATA_DIR):
+       os.mkdir(PROCESSED_DATA_DIR)
     audio_dataset_preprocessed.save_to_disk(PROCESSED_DATA_DIR)
 
     print("------------ Great expectations -------------")
-    df_great_expectations = df_great_expectations.reset_index(drop=True)
-    print(df_great_expectations)
+    df_great_expectations = df_great_expectations.reset_index(drop=True) # reset the index of the dataframe to be the same one for all splits
     print(len(df_great_expectations))
 
     
