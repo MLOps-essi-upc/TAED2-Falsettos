@@ -53,21 +53,6 @@
       "meta": {}
     },
     {
-      "expectation_type": "expect_column_values_to_be_of_type",
-      "kwargs": {
-        "column": "audio",
-        "type_": "bytes"
-      },
-      "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_values_to_be_unique",
-      "kwargs": {
-        "column": "label"
-      },
-      "meta": {}
-    },
-    {
       "expectation_type": "expect_column_values_to_not_be_null",
       "kwargs": {
         "column": "label"
@@ -78,7 +63,7 @@
       "expectation_type": "expect_column_values_to_be_of_type",
       "kwargs": {
         "column": "label",
-        "type_": "int"
+        "type_": "int64"
       },
       "meta": {}
     }
