@@ -38,17 +38,17 @@ stages:
           random_state: 33
           num_classes: 36
           batch_size: 256
-          lr: 1e-05
+          lr: 0.0001
           momentum: 0.9
           optimizer: adam
           adapter_hidden_size: 128
-          epochs: 100
+          epochs: 2
           patience: 5
           log_interval: 15
     outs:
     - path: models/final_model/
-      md5: 46157dc3f50a476f533f129356400484.dir
-      size: 378782616
+      md5: 4e5dbea8084760ace37d94098ec8de88.dir
+      size: 378782620
       nfiles: 2
   test:
     cmd: python -m src.models.test_model
@@ -58,8 +58,8 @@ stages:
       size: 6400265348
       nfiles: 21
     - path: models/final_model/
-      md5: 46157dc3f50a476f533f129356400484.dir
-      size: 378782616
+      md5: 4e5dbea8084760ace37d94098ec8de88.dir
+      size: 378782620
       nfiles: 2
     - path: src/models/test_model.py
       md5: 92c953c9804c61028ac78cb5151c4c57
@@ -71,10 +71,10 @@ stages:
           random_state: 33
           num_classes: 36
           batch_size: 256
-          lr: 1e-05
+          lr: 0.0001
           momentum: 0.9
           optimizer: adam
           adapter_hidden_size: 128
-          epochs: 100
+          epochs: 2
           patience: 5
           log_interval: 15
