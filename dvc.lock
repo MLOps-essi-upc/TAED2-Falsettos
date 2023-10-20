@@ -8,8 +8,8 @@ stages:
       size: 3157509406
       nfiles: 15
     - path: src/data/preprocess_dataset.py
-      md5: 40818fa035b4521d03b6003b3f083657
-      size: 2879
+      md5: a9939ec1e0c2ffaca9920104801487ff
+      size: 3570
     params:
       params.yaml:
         dataset:
@@ -21,6 +21,10 @@ stages:
       md5: 71e19ba3eece3a035a491a870ffb331e.dir
       size: 6400265348
       nfiles: 21
+    - path: gx/uncommitted/data_docs/
+      md5: ff2d815755c7d6ecb2b19673e822e161.dir
+      size: 4183911
+      nfiles: 23
   train:
     cmd: python -m src.models.train_model
     deps:
@@ -29,8 +33,8 @@ stages:
       size: 6400265348
       nfiles: 21
     - path: src/models/train_model.py
-      md5: a7b2ca3bf6fe09669cfc9699b41344c8
-      size: 9946
+      md5: e86d7016e4f4040eb773f810dd404178
+      size: 8395
     params:
       params.yaml:
         model:
@@ -42,13 +46,13 @@ stages:
           momentum: 0.9
           optimizer: adam
           adapter_hidden_size: 128
-          epochs: 1
+          epochs: 2
           patience: 5
           log_interval: 15
     outs:
     - path: models/final_model/
-      md5: b33068d6e9033cc7e2a47de04e88956f.dir
-      size: 378782624
+      md5: 444395f70b862c9ba68371c49916c397.dir
+      size: 378782619
       nfiles: 2
   test:
     cmd: python -m src.models.test_model
@@ -58,12 +62,12 @@ stages:
       size: 6400265348
       nfiles: 21
     - path: models/final_model/
-      md5: b33068d6e9033cc7e2a47de04e88956f.dir
-      size: 378782624
+      md5: 444395f70b862c9ba68371c49916c397.dir
+      size: 378782619
       nfiles: 2
     - path: src/models/test_model.py
-      md5: 92c953c9804c61028ac78cb5151c4c57
-      size: 5746
+      md5: 881f5ad7257d33a4e2a263c4df6cd20d
+      size: 4316
     params:
       params.yaml:
         model:
@@ -75,6 +79,6 @@ stages:
           momentum: 0.9
           optimizer: adam
           adapter_hidden_size: 128
-          epochs: 1
+          epochs: 2
           patience: 5
           log_interval: 15

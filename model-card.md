@@ -1,4 +1,4 @@
-# Model Card for HUBERT_00
+# Model Card for Hubert_Classifier
 
 The idea of the models in our case is to predict from a one-second .wav audio file (single spoken English word or background noise) whether it is noise or a word. So the task is Audio Classification and the sub-task is Keyword Spotting from non-noise audios. 
 
@@ -31,7 +31,7 @@ prediction.
 
 <!-- This section is for the model use without fine-tuning or plugging into a larger ecosystem/app. -->
 
-Given an audio file (.wav) of one second the idea is to give a label of the word (English word) said or whether  it's noise. 
+Given an audio file (.wav) of one second the idea is to give a label of the word (English word) said or whether it's noise. 
 
 ### Downstream Use 
 
@@ -53,59 +53,102 @@ Ensure a slow and clear pronunciation when recording the words. Avoid surroundin
 
 ## How to Get Started with the Model
 
-///TO BE DONE-------------------------------------------------------------------
-Use the code below to get started with the model. (TO BE DONE)
+Use the code below to get started with the model:
+
+First import libraries needed (such as torch or transformers), also add the class HubertForAudioClassification. In predict_model.py you will find all the libraries needed and the class HubertForAudioClassification. 
+
+To load the best model, first initialize the model using our class HubertForAudioClassification. Then get the path .pt or .pth archive where are saved the best weights of the model. Then, load the weights to the model:
+
+```python
+model = HubertForAudioClassification(adapter_hidden_size=params["model"]["adapter_hidden_size"])
+
+PATH = os.path.join(MODELS_DIR,'final_model', '{}_bestmodel.pt'.format(params["model"]["algorithm_name"]))
+    
+model.load_state_dict(torch.load(PATH), strict=False)
+```
+
+Then, move the model to CPU or GPU (in this case we move it to CPU) and then set model to evaluate:
+
+```python
+model.cpu()
+model.eval()
+```
+
+Finally, use the model to predict on a single audio file (even though many can be forwarded in the batch dimension). First, load the audio file. The entry is a tensor of floats of precision 32 bits. This was created using preprocessing pipeline, we recommend you to follow the same procedure to avoid a lower performance. Remember to add batch dim using unsqueeze(0) to the tensor. 
+
+And then use the model to predict, we must use softmax (or logsoftmax to have better numerical stability) to get the probabilities of each class. Then, we get the index of the maximum value along the class dimension. This index is the predicted class. Finally, we get the word associated to the predicted class (using the dictionary of words provided by the dataset).
+
+```python
+with torch.no_grad():
+        # Get the output
+        logits = model(data_sample)
+        output = F.log_softmax(logits, dim=1)
+        # Get the indices of the maximum values along the class dimension
+        predicted_class = torch.argmax(output, dim=1)
+```
+Using these commands we will know exactly the class predicted, and it's reference in the dictionary of words (provided by dataset).
+```python
+    label = predicted_class.int().item()
+    print("Predicted label:", label)
+    print("Predicted word:", UNKNOWN_WORDS_V2[label])
+```
 
 ## Training Details
 
 ### Training Data
+- [Dataset Card](dataset-card.md) 
 
-<!-- This should link to a Data Card, perhaps with a short stub of information on what the training data is all about as well as documentation related to data pre-processing or additional filtering. -->
+|       | train | validation |
+|:-----:|:-----:|:----------:|
+| v0.01 | 51093 |    6799    |
+| v0.02 | 84848 |    9982    |
 
-{{ training_data | default("[More Information Needed]", true)}}
+This is a set of one-second .wav audio files, each containing a single spoken English word or background noise. These words are from a small set of commands, and are spoken by a variety of different speakers. This data set is designed to help train simple machine learning models. It is covered in more detail at https://arxiv.org/abs/1804.03209.
+
+Data splits were given from the authors of the dataset. 
 
 ### Training Procedure 
 
-<!-- This relates heavily to the Technical Specifications. Content here should link to that section when it is relevant to the training procedure. -->
+#### Preprocessing 
 
-#### Preprocessing [optional]
-
-{{ preprocessing | default("[More Information Needed]", true)}}
+We delete some columns that we don't need from raw dataset, and make some changes in labelling and audio. The audio is stored as a vector, so we ensure the length of the audio is exactly 1 second or 16000 samples (sample rate must be 16kHz). 
 
 
 #### Training Hyperparameters
 
-- **Training regime:** {{ training_regime | default("[More Information Needed]", true)}} <!--fp32, fp16 mixed precision, bf16 mixed precision, bf16 non-mixed precision, fp16 non-mixed precision, fp8 mixed precision -->
+- **batch_size**: 256 # training and valid batch size
+- **lr**: 0.00001 # learning rate
+- **momentum**: 0.9 # SGD momentum, for SGD only
+- **optimizer**: 'adam' # optimization method: sgd | adam
+- **adapter_hidden_size**: 128 # model hyperparameter
 
-#### Speeds, Sizes, Times [optional]
+- **epochs**: 100  # maximum number of epochs to train
+- **patience**: 5 # how many epochs of no loss improvement should we wait before stop training
+- **log_interval**: 15 # how many batches to wait before logging training status
 
-<!-- This section provides information about throughput, start/end time, checkpoint size if relevant, etc. -->
+#### Speeds, Sizes, Times
 
-{{ speeds_sizes_times | default("[More Information Needed]", true)}}
+We make checkpoints each time an epoch gives better results compared to the last one. We save the best model in a .pt archive. All local archives are saved in the folder "models" in the root of the project but ignored from github. So MLflow and DVC only stores the best model found through all the epochs.
+
+The throughput is in MLFLow and DVC, so you can see the results in the links provided in the README.md file.
 
 ## Evaluation
-
-<!-- This section describes the evaluation protocols and provides the results. -->
 
 ### Testing Data, Factors & Metrics
 
 #### Testing Data
+- [Dataset Card](dataset-card.md) 
 
-<!-- This should link to a Data Card if possible. -->
-
-{{ testing_data | default("[More Information Needed]", true)}}
-
-#### Factors
-
-<!-- These are the things the evaluation is disaggregating by, e.g., subpopulations or domains. -->
-
-{{ testing_factors | default("[More Information Needed]", true)}}
+|       | test |
+|:-----:|:----:|
+| v0.01 | 3081 |
+| v0.02 | 4890 |
 
 #### Metrics
 
-<!-- These are the evaluation metrics being used, ideally with a description of why. -->
+The metric we will use for evaluating the model is F1 score. We couldn’t use accuracy as the classes had imbalance, and this new metric is particularly useful because it focuses on the performance of the minority class. We can observe in this figure (generated by “label distribution.ipynb”) the number of entries per class. 
 
-{{ testing_metrics | default("[More Information Needed]", true)}}
+Also we record the Loss average per epoch and the used loss is the CrossEntropyLoss.
 
 ### Results
 
@@ -115,65 +158,18 @@ Use the code below to get started with the model. (TO BE DONE)
 
 {{ results_summary | default("", true) }}
 
-## Model Examination [optional]
-
-<!-- Relevant interpretability work for the model goes here -->
-
-{{ model_examination | default("[More Information Needed]", true)}}
-
 ## Environmental Impact
 
-<!-- Total emissions (in grams of CO2eq) and additional considerations, such as electricity usage, go here. Edit the suggested text below accordingly -->
+Carbon emissions are estimated using the codecarbon library for Python.
 
-Carbon emissions can be estimated using the [Machine Learning Impact calculator](https://mlco2.github.io/impact#compute) presented in [Lacoste et al. (2019)](https://arxiv.org/abs/1910.09700).
-
-- **Hardware Type:** {{ hardware | default("[More Information Needed]", true)}}
+- **Hardware Type:** Desktop device (RTX 3060 + 32GB RAM + i5 12400F)
 - **Hours used:** {{ hours_used | default("[More Information Needed]", true)}}
-- **Cloud Provider:** {{ cloud_provider | default("[More Information Needed]", true)}}
-- **Compute Region:** {{ cloud_region | default("[More Information Needed]", true)}}
-- **Carbon Emitted:** {{ co2_emitted | default("[More Information Needed]", true)}}
-
-## Technical Specifications [optional]
-
-### Model Architecture and Objective
-
-{{ model_specs | default("[More Information Needed]", true)}}
-
-### Compute Infrastructure
-
-{{ compute_infrastructure | default("[More Information Needed]", true)}}
-
-#### Hardware
-
-{{ hardware | default("[More Information Needed]", true)}}
-
-#### Software
-
-{{ software | default("[More Information Needed]", true)}}
-
-///TO BE DONE-------------------------------------------------------------------
-
-## Citation [optional]
-
-<!-- If there is a paper or blog post introducing the model, the APA and Bibtex information for that should go in this section. -->
-
-**BibTeX:**
-
-{{ citation_bibtex | default("[More Information Needed]", true)}}
-
-**APA:**
-
-{{ citation_apa | default("[More Information Needed]", true)}}
-
-## Glossary [optional]
-
-<!-- If relevant, include terms and calculations in this section that can help readers understand the model or model card. -->
-
-{{ glossary | default("[More Information Needed]", true)}}
+- **Cloud Provider:** DagsHub (https://dagshub.com/) to experiment tracking and storing
+- **Compute Region:** Spain
+- **Carbon Emitted:** {{ co2_emitted | default("[More Information Needed]", true)}} kg CO2
 
 ## Model Card Contact
-
-{{ model_card_contact | default("[More Information Needed]", true)}}
+e-mail: armand.de.asis@estudiantat.upc.edu
 
 
 

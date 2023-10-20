@@ -12,13 +12,13 @@ import torch.nn as nn
 import torch.optim as optim
 import random
 
-from transformers import Wav2Vec2FeatureExtractor, HubertModel
 from torch.utils.data import Dataset, DataLoader
 from torcheval.metrics.functional import multiclass_f1_score
 
 import torch.nn.functional as F
 
 from src import ROOT_DIR, MODELS_DIR, PROCESSED_DATA_DIR
+from src.models.Hubert_Classifier_model import HubertForAudioClassification
 
 from pathlib import Path
 
@@ -41,58 +41,13 @@ def data_loading(input_folder_path, batch_size):
     audio_dataset = datasets.load_from_disk(input_folder_path)
     audio_dataset.set_format(type='torch', columns=['key', 'features', 'label'])
      # Create the dataloaders
-    train_loader = DataLoader(dataset=audio_dataset["validation"], batch_size=batch_size, shuffle=True, drop_last=True)
+    train_loader = DataLoader(dataset=audio_dataset["train"], batch_size=batch_size, shuffle=True, drop_last=True)
     val_loader = DataLoader(dataset=audio_dataset["validation"], batch_size=batch_size, shuffle=True, drop_last=True)
 
     print('Training set has {} instances'.format(len(audio_dataset["train"])))
     print('Validation set has {} instances'.format(len(audio_dataset["validation"])))
 
     return train_loader, val_loader
-
-
-class HubertForAudioClassification(nn.Module):
-    def __init__(self, adapter_hidden_size = 64):
-        super().__init__()
-
-        self.hubert = HubertModel.from_pretrained("facebook/hubert-base-ls960")
-
-        hidden_size = self.hubert.config.hidden_size
-
-        self.adaptor = nn.Sequential(
-            nn.Linear(hidden_size, adapter_hidden_size),
-            nn.ReLU(True),
-            nn.Dropout(0.05),
-            nn.Linear(adapter_hidden_size, hidden_size),
-        )
-
-        self.classifier = nn.Sequential(
-            nn.Linear(hidden_size, adapter_hidden_size),
-            nn.ReLU(True),
-            nn.Dropout(0.05),
-            nn.Linear(adapter_hidden_size, 36), # 36 classes
-        )
-
-    def freeze_feature_encoder(self):
-        """
-        Calling this function will disable the gradient computation for the feature encoder so that its parameter will
-        not be updated during training.
-        """
-        self.hubert.feature_extractor._freeze_parameters()
-
-    def forward(self, x):
-        # x shape: (B,E)
-        x = self.hubert(x).last_hidden_state
-        x = F.layer_norm(x, x.shape[1:])
-        x = self.adaptor(x)
-        # pooling
-        x, _ = x.max(dim=1)
-
-        # Mutilayer perceptron with log softmax for classification
-        out = self.classifier(x)
-
-        # Remove last dimension
-        return out
-        # return shape: (B, total_labels)
 
 
 def train(loader, model, criterion, optimizer, epoch, log_interval, verbose=True):
@@ -261,7 +216,6 @@ def main():
     final_model_save_path = os.path.join(MODELS_DIR, 'final_model')
     if not os.path.exists(final_model_save_path):
        os.mkdir(final_model_save_path)
-    print(os.path.join(MODELS_DIR, 'final_model', '{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch)))
     torch.save(model.state_dict(), os.path.join(MODELS_DIR, 'final_model', '{}_bestmodel.pt'.format(params["algorithm_name"])))
 
     emissions: float = tracker.stop()

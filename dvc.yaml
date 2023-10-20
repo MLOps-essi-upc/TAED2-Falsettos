@@ -8,6 +8,7 @@ stages:
     - dataset
     outs:
     - data/processed/
+    - gx/uncommitted/data_docs/
   train:
     cmd: python -m src.models.train_model
     deps:
