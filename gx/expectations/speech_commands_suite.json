@@ -39,13 +39,6 @@
       "meta": {}
     },
     {
-      "expectation_type": "expect_column_values_to_be_unique",
-      "kwargs": {
-        "column": "audio"
-      },
-      "meta": {}
-    },
-    {
       "expectation_type": "expect_column_values_to_not_be_null",
       "kwargs": {
         "column": "audio"
@@ -70,6 +63,6 @@
   ],
   "ge_cloud_id": null,
   "meta": {
-    "great_expectations_version": "0.17.22"
+    "great_expectations_version": "0.17.23"
   }
 }

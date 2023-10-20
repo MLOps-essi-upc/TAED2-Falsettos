@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from src import PROCESSED_DATA_DIR, RAW_DATA_DIR
+from src import ROOT_DIR,RAW_DATA_DIR, PROCESSED_DATA_DIR
 
 from pathlib import Path
 import yaml
@@ -9,6 +9,7 @@ from transformers import Wav2Vec2FeatureExtractor
 import torch
 import pandas as pd
 import os
+from src.features.validate import great_expectations
 
 
 def preprocess_data(data, feature_extractor, total_labels, audio_length):
@@ -28,7 +29,6 @@ def preprocess_data(data, feature_extractor, total_labels, audio_length):
     one_hot_encoding[data['label']] = 1
     
     return {"key": data['file'], "features": torch.from_numpy(audio_decoded.astype(np.float32)), "label": one_hot_encoding}
-
 
 def main():
     """ Runs data processing scripts to turn raw data from (../raw) into
@@ -72,9 +72,7 @@ def main():
 
     print("------------ Great expectations -------------")
     df_great_expectations = df_great_expectations.reset_index(drop=True) # reset the index of the dataframe to be the same one for all splits
-    print(len(df_great_expectations))
-
-    
-
-
+    great_expectations(df_great_expectations)
+    PATH_GX = Path(ROOT_DIR, "gx", "uncommitted", "data_docs")
+    print("Great expectations done and saved in:", PATH_GX)
 main()
