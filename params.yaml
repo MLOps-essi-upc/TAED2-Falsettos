@@ -11,7 +11,7 @@ model:
   lr: 0.0001 # learning rate
   momentum: 0.9 # SGD momentum, for SGD only
   optimizer: 'adam' # optimization method: sgd | adam
-  adapter_hidden_size: 128 # model hyperparameter
+  adapter_hidden_size: 256 # model hyperparameter
 
   epochs: 20  # maximum number of epochs to train
   patience: 5 # how many epochs of no loss improvement should we wait before stop training

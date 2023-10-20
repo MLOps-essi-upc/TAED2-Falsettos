@@ -45,14 +45,14 @@ stages:
           lr: 0.0001
           momentum: 0.9
           optimizer: adam
-          adapter_hidden_size: 128
+          adapter_hidden_size: 256
           epochs: 20
           patience: 5
           log_interval: 15
     outs:
     - path: models/final_model/
-      md5: c6c695cb0d53ee9d182aa28f8ece7fb8.dir
-      size: 378782617
+      md5: 9b22d99eb2012903f20fcfc3c3eee493.dir
+      size: 379981720
       nfiles: 2
   test:
     cmd: python -m src.models.test_model
@@ -62,8 +62,8 @@ stages:
       size: 6400265348
       nfiles: 21
     - path: models/final_model/
-      md5: c6c695cb0d53ee9d182aa28f8ece7fb8.dir
-      size: 378782617
+      md5: 9b22d99eb2012903f20fcfc3c3eee493.dir
+      size: 379981720
       nfiles: 2
     - path: src/models/test_model.py
       md5: 881f5ad7257d33a4e2a263c4df6cd20d
@@ -78,7 +78,7 @@ stages:
           lr: 0.0001
           momentum: 0.9
           optimizer: adam
-          adapter_hidden_size: 128
+          adapter_hidden_size: 256
           epochs: 20
           patience: 5
           log_interval: 15
