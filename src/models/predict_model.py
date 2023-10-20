@@ -8,7 +8,7 @@ import torch.nn as nn
 import os
 import pandas as pd
 
-from transformers import Wav2Vec2FeatureExtractor, HubertModel
+from transformers import Wav2Vec2FeatureExtractor
 
 import torch.nn.functional as F
 

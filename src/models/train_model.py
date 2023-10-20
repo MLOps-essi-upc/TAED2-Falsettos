@@ -12,7 +12,6 @@ import torch.nn as nn
 import torch.optim as optim
 import random
 
-from transformers import Wav2Vec2FeatureExtractor, HubertModel
 from torch.utils.data import Dataset, DataLoader
 from torcheval.metrics.functional import multiclass_f1_score
 
@@ -217,7 +216,6 @@ def main():
     final_model_save_path = os.path.join(MODELS_DIR, 'final_model')
     if not os.path.exists(final_model_save_path):
        os.mkdir(final_model_save_path)
-    print(os.path.join(MODELS_DIR, 'final_model', '{}_bestmodel_{:03d}.pt'.format(params["algorithm_name"], epoch)))
     torch.save(model.state_dict(), os.path.join(MODELS_DIR, 'final_model', '{}_bestmodel.pt'.format(params["algorithm_name"])))
 
     emissions: float = tracker.stop()

@@ -9,7 +9,6 @@ import torch.nn as nn
 import random
 import os
 
-from transformers import Wav2Vec2FeatureExtractor, HubertModel
 from torch.utils.data import Dataset, DataLoader
 from torcheval.metrics.functional import multiclass_f1_score
 

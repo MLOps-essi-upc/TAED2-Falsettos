@@ -1,3 +1,7 @@
+from transformers import HubertModel
+import torch.nn as nn
+import torch.nn.functional as F
+
 class HubertForAudioClassification(nn.Module):
     def __init__(self, adapter_hidden_size = 64):
         super().__init__()
