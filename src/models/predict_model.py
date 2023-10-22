@@ -1,10 +1,8 @@
 from pathlib import Path
 import yaml
 
-
 import numpy as np
 import torch
-import torch.nn as nn
 import os
 import pandas as pd
 
@@ -15,18 +13,15 @@ import torch.nn.functional as F
 from src import MODELS_DIR, RAW_DATA_SAMPLE, UNKNOWN_WORDS_V2
 from src.models.Hubert_Classifier_model import HubertForAudioClassification
 
-from pathlib import Path
-
-
 
 def preprocess_data_sample(audio_decoded, feature_extractor, audio_length):
-    # Freqquency sampling should be 16kHz
+    # Frequency sampling should be 16kHz
     # Audio normalization and feature extraction
     audio_decoded -= audio_decoded.mean()
 
-    if len(audio_decoded)<audio_length*16000: #the audio is shorter than one second, we need to pad it
+    if len(audio_decoded)<audio_length*16000:  # the audio is shorter than one second, we need to pad it
         audio_decoded = np.pad(audio_decoded, (0, 16000-len(audio_decoded)), 'constant')
-    elif len(audio_decoded)>audio_length*16000: #the audio is longer than one second, we need to cut it
+    elif len(audio_decoded)>audio_length*16000:  # the audio is longer than one second, we need to cut it
         audio_decoded = audio_decoded[:16000]
 
     feature_extractor(audio_decoded, sampling_rate = 16000)
@@ -36,7 +31,8 @@ def preprocess_data_sample(audio_decoded, feature_extractor, audio_length):
     
     return tensor
 
-def main():
+
+def predict_label():
     # Path of the parameters file
     params_path = Path("params.yaml")
 
@@ -81,4 +77,4 @@ def main():
     print("Predicted label:", label)
     print("Predicted word:", UNKNOWN_WORDS_V2[label])
 
-main()
+    return label
