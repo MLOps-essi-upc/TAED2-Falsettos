@@ -11,7 +11,7 @@ PROCESSED_DATA_DIR = ROOT_DIR / "data" / "processed"
 RAW_DATA_SAMPLE = ROOT_DIR / "data" / "raw_sample_example"
 
 METRICS_DIR = ROOT_DIR / "metrics"
-MODELS_DIR = ROOT_DIR / "models"
+MODELS_DIR = ROOT_DIR / "models" / "final_model"
 
 
 UNKNOWN_WORDS_V1 = [

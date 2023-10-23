@@ -1,23 +1,24 @@
-import datasets
+""" Given a trained model, test the model and give a F1 score
+"""
+
 from pathlib import Path
-import yaml
-
-
-import numpy as np
-import torch
-import torch.nn as nn
 import random
 import os
+import numpy as np
 
-from torch.utils.data import Dataset, DataLoader
-from torcheval.metrics.functional import multiclass_f1_score
+import datasets
 
+import yaml
+
+import torch
+from torch import nn
+from torch.utils.data import DataLoader
 import torch.nn.functional as F
+
+from torcheval.metrics.functional import multiclass_f1_score
 
 from src import ROOT_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 from src.models.Hubert_Classifier_model import HubertForAudioClassification
-
-from pathlib import Path
 
 import mlflow
 
@@ -37,7 +38,8 @@ def data_loading(input_folder_path, batch_size):
     audio_dataset = datasets.load_from_disk(input_folder_path)
     audio_dataset.set_format(type='torch', columns=['key', 'features', 'label'])
      # Create the dataloaders
-    test_loader = DataLoader(dataset=audio_dataset["test"], batch_size=batch_size, shuffle=True, drop_last=True)
+    test_loader = DataLoader(dataset=audio_dataset["test"],
+                    batch_size=batch_size, shuffle=True, drop_last=True)
 
     print('Test set has {} instances'.format(len(audio_dataset["test"])))
 
@@ -50,7 +52,7 @@ def test(loader, model, criterion, num_classes):
     total_targets = torch.Tensor()
     samples = 0
     with torch.no_grad():
-        for batch_idx, batch in enumerate(loader):
+        for _, batch in enumerate(loader):
             # Get the the outputs
             data, target = batch["features"].cuda(), batch["label"].cuda()
             logits = model(data)
@@ -67,7 +69,8 @@ def test(loader, model, criterion, num_classes):
             samples += len(target)
 
 
-    F1_score = multiclass_f1_score(input = total_preds, target = total_targets, num_classes = num_classes)
+    F1_score = multiclass_f1_score(input = total_preds,
+                target = total_targets, num_classes = num_classes)
 
     print('Test: \tMean Loss: {:.6f} / F1-score {:.6f}'.format(global_epoch_loss/samples, F1_score))
 
@@ -104,9 +107,10 @@ def main():
     # ============== #
     model = HubertForAudioClassification(adapter_hidden_size=params["adapter_hidden_size"])
     # Load the state dictionary and then assign it to the model
-    PATH = os.path.join(MODELS_DIR,'final_model', '{}_bestmodel.pt'.format(params["algorithm_name"]))
+    PATH = os.path.join(MODELS_DIR,'final_model', '{}_bestmodel.pt'
+                        .format(params["algorithm_name"]))
     model.load_state_dict(torch.load(PATH), strict=False)
-    
+
     # Define criterion
     criterion = nn.CrossEntropyLoss(reduction = 'mean')
 

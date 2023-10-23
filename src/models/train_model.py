@@ -1,26 +1,24 @@
-import datasets
-from pathlib import Path
-import yaml
+""" Given data, trains the Hubert Model
+"""
 
 import os
 import time
-
-import numpy as np
-import torch
-import torch.utils.data as data
-import torch.nn as nn
-import torch.optim as optim
 import random
+from pathlib import Path
+import numpy as np
 
-from torch.utils.data import Dataset, DataLoader
-from torcheval.metrics.functional import multiclass_f1_score
+import datasets
+import yaml
 
+import torch
+from torch import nn
+from torch import optim
 import torch.nn.functional as F
+from torch.utils.data import DataLoader
+from torcheval.metrics.functional import multiclass_f1_score
 
 from src import ROOT_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 from src.models.Hubert_Classifier_model import HubertForAudioClassification
-
-from pathlib import Path
 
 import mlflow
 from codecarbon import EmissionsTracker
@@ -41,8 +39,10 @@ def data_loading(input_folder_path, batch_size):
     audio_dataset = datasets.load_from_disk(input_folder_path)
     audio_dataset.set_format(type='torch', columns=['key', 'features', 'label'])
      # Create the dataloaders
-    train_loader = DataLoader(dataset=audio_dataset["train"], batch_size=batch_size, shuffle=True, drop_last=True)
-    val_loader = DataLoader(dataset=audio_dataset["validation"], batch_size=batch_size, shuffle=True, drop_last=True)
+    train_loader = DataLoader(dataset=audio_dataset["train"]
+                        ,batch_size=batch_size, shuffle=True, drop_last=True)
+    val_loader = DataLoader(dataset=audio_dataset["validation"]
+                        ,batch_size=batch_size, shuffle=True, drop_last=True)
 
     print('Training set has {} instances'.format(len(audio_dataset["train"])))
     print('Validation set has {} instances'.format(len(audio_dataset["validation"])))
@@ -65,8 +65,9 @@ def train(loader, model, criterion, optimizer, epoch, log_interval, verbose=True
         samples += len(target)
 
         if verbose and (batch_idx % log_interval == 0):
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, samples, len(loader.dataset), 100*samples/len(loader.dataset), global_epoch_loss/samples))
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'
+                .format(epoch, samples, len(loader.dataset),
+                100*samples/len(loader.dataset), global_epoch_loss/samples))
 
     return global_epoch_loss / samples
 
@@ -78,7 +79,7 @@ def val(loader, model, criterion, epoch, num_classes):
     total_targets = torch.Tensor()
     samples = 0
     with torch.no_grad():
-        for batch_idx, batch in enumerate(loader):
+        for _, batch in enumerate(loader):
             # Get the the outputs
             data, target = batch["features"].cuda(), batch["label"].cuda()
             logits = model(data)
@@ -95,9 +96,11 @@ def val(loader, model, criterion, epoch, num_classes):
             samples += len(target)
 
 
-    F1_score = multiclass_f1_score(input = total_preds, target = total_targets, num_classes = num_classes)
+    F1_score = multiclass_f1_score(input = total_preds, target =
+                    total_targets, num_classes = num_classes)
 
-    print('Validation Epoch: {} \tMean Loss: {:.6f} / F1-score {:.6f}'.format(epoch, global_epoch_loss/samples, F1_score))
+    print('Validation Epoch: {} \tMean Loss: {:.6f} / F1-score {:.6f}'
+          .format(epoch, global_epoch_loss/samples, F1_score))
 
     return global_epoch_loss / samples, F1_score
 
@@ -125,7 +128,7 @@ def main():
     mlflow.log_param('mode', 'training')
     mlflow.log_params(params)
 
-    train_loader, val_loader = data_loading (PROCESSED_DATA_DIR, params["batch_size"]) # data loading
+    train_loader, val_loader = data_loading (PROCESSED_DATA_DIR, params["batch_size"]) #data loading
 
     # ============== #
     # MODEL CREATION #
@@ -144,7 +147,6 @@ def main():
     else:
         optimizer = optim.SGD(model.parameters(), lr=params["lr"], momentum=params["momentum"])
 
-    
 
     # Move the model to GPU
     if torch.cuda.is_available():
@@ -158,13 +160,15 @@ def main():
     # ============== #
     print("------------- Training phase ----------------")
     # Define the emissions tracker
-    tracker = EmissionsTracker(measure_power_secs=10, output_dir=os.path.join(MODELS_DIR, 'final_model'), log_level= "warning") # measure power every 10 seconds
+    tracker = EmissionsTracker(measure_power_secs=10, output_dir=os.path.
+                               join(MODELS_DIR, 'final_model'),
+                               log_level= "warning") # measure power every 10 seconds
     tracker.start()
 
     #Define saving checkpoints path
     checkpoint_path = Path(str(MODELS_DIR)+"/checkpoints")
     if not os.path.exists(checkpoint_path):
-       os.mkdir(checkpoint_path)
+        os.mkdir(checkpoint_path)
 
     # Define the training parameters
     best_val_F1 = 0.0
@@ -215,8 +219,9 @@ def main():
     # Save model
     final_model_save_path = os.path.join(MODELS_DIR, 'final_model')
     if not os.path.exists(final_model_save_path):
-       os.mkdir(final_model_save_path)
-    torch.save(model.state_dict(), os.path.join(MODELS_DIR, 'final_model', '{}_bestmodel.pt'.format(params["algorithm_name"])))
+        os.mkdir(final_model_save_path)
+    torch.save(model.state_dict(), os.path.join(MODELS_DIR
+                ,'final_model', '{}_bestmodel.pt'.format(params["algorithm_name"])))
 
     emissions: float = tracker.stop()
     # Log metrics to Mlflow

@@ -1,5 +1,9 @@
+""" Define the Hubert model
+"""
+
+
 from transformers import HubertModel
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
 
 class HubertForAudioClassification(nn.Module):
@@ -26,8 +30,8 @@ class HubertForAudioClassification(nn.Module):
 
     def freeze_feature_encoder(self):
         """
-        Calling this function will disable the gradient computation for the feature encoder so that its parameter will
-        not be updated during training.
+        Calling this function will disable the gradient computation for the feature encoder 
+        so that its parameter will not be updated during training.
         """
         self.hubert.feature_extractor._freeze_parameters()
 
