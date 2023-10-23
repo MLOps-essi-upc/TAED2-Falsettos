@@ -2,11 +2,16 @@
 
 from enum import Enum
 from pydantic import BaseModel
-from fastapi import UploadFile
+import numpy as np
+import numpy
+
+from pydantic import BaseModel
+
+
 
 
 class PredictPayload(BaseModel):
-    file: UploadFile
+    audio_array: str
 
 
 class SpeechCommand(Enum):
