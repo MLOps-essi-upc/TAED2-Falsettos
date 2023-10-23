@@ -16,9 +16,10 @@ from typing import Annotated
 from transformers import Wav2Vec2FeatureExtractor
 import torch.nn.functional as F
 
-from src import MODELS_DIR, UNKNOWN_WORDS_V2
+from src import MODELS_DIR
 from src.app.schemas import SpeechCommand, PredictPayload
 from src.models.Hubert_Classifier_model import HubertForAudioClassification
+import os
 
 import soundfile as sf
 
@@ -57,37 +58,28 @@ def construct_response(f):
     return wrap
 
 
-@app.on_event("startup")
-def _load_models():
-    """Loads all pickled models found in `MODELS_DIR` and adds them to `models_list`"""
+def _get_params():
+    """Read data preparation parameters"""
 
-    model_paths = [
-        filename
-        for filename in MODELS_DIR.iterdir()
-        if filename.suffix == ".pt"
-    ]
-
-    #for path in model_paths:
-    #    with open(path, "rb") as file:
-    #        model_wrapper = pickle.load(file)
-    #        model_wrappers_list.append(model_wrapper)
-
-    # Path of the parameters file
     params_path = Path("params.yaml")
-
-    # Read data preparation parameters
     with open(params_path, "r") as params_file:
         try:
             params = yaml.safe_load(params_file)
         except yaml.YAMLError as exc:
             print(exc)
+    return params
 
-    for path in model_paths:
-        model = HubertForAudioClassification(adapter_hidden_size=params["model"]["adapter_hidden_size"])
-        model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
-        model_wrappers_list.append(model)
-        #model.cpu()
-        #model.eval()
+
+@app.on_event("startup")
+def _load_model():
+    """Load the HubertModel for Audio Classification"""
+
+    model_path = os.path.join(MODELS_DIR,"Hubert_Classifier_bestmodel.pt")
+    params = _get_params()
+
+    model = HubertForAudioClassification(adapter_hidden_size=params["model"]["adapter_hidden_size"])
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    return model
 
 
 @app.get("/", tags=["General"])  # path operation decorator
@@ -103,40 +95,6 @@ def _index(request: Request):
     return response
 
 
-@app.get("/models", tags=["Prediction"])
-@construct_response
-def _get_models_list(request: Request, type: str = None):
-    """Return the list of available models"""
-
-    available_models = [
-        {
-            "type": "type",
-            "parameters": "muchos",
-            "f1 score": "de locos",
-        }
-        for model in model_wrappers_list
-    ]
-
-    #available_models = [
-    #    {
-    #        "type": model["type"],
-    #        "parameters": model["params"],
-    #        "f1 score": model["metrics"],
-    #    }
-    #    for model in model_wrappers_list
-    #    if model["type"] == type or type is None
-    #]
-
-    if not available_models:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Type not found")
-    else:
-        return {
-            "message": HTTPStatus.OK.phrase,
-            "status-code": HTTPStatus.OK,
-            "data": available_models,
-        }
-
-
 def _preprocess_data_sample(audio_decoded, feature_extractor, audio_length):
     # Frequency sampling should be 16kHz
     # Audio normalization and feature extraction
@@ -146,7 +104,7 @@ def _preprocess_data_sample(audio_decoded, feature_extractor, audio_length):
     #padded_data = audio_decoded[:padding_size]
     #audio_array = np.frombuffer(padded_data, dtype=np.float64)
 
-    audio_array = audio_decoded - audio_decoded.mean()
+    audio_array = audio_decoded-audio_decoded.mean()
 
     if len(audio_decoded)<audio_length*16000:  # the audio is shorter than one second, we need to pad it
         audio_decoded = np.pad(audio_decoded, (0, 16000-len(audio_decoded)), 'constant')
@@ -157,38 +115,34 @@ def _preprocess_data_sample(audio_decoded, feature_extractor, audio_length):
 
     tensor = torch.from_numpy(audio_array.astype(np.float32))
     tensor = tensor.unsqueeze(0) # add batch dimension
-    
+
     return tensor
 
 
-@app.post("/models/{type}", tags=["Prediction"])
+@app.post("/predict", tags=["Prediction"])
 @construct_response
-def _predict(request: Request, type: str, payload: PredictPayload):
+def _predict(request: Request, payload: PredictPayload):
     """Recognise a Speech Command given an audio file"""
 
     params = _get_params()
-    arr=eval(payload.audio_array)
-    data = np.frombuffer(arr)
+    data = np.frombuffer(eval(payload.audio_array))
 
     feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(params["dataset"]["feature_extractor"]) # Wav2Vec2 feature extractor
     data_sample = _preprocess_data_sample(data, feature_extractor, params["dataset"]["audio_length"])
 
-    #model_wrapper = next((m for m in model_wrappers_list), None) #if m["type"] == type), None)
-
-    model = model_wrappers_list[0]
+    model = _load_model()
     model.eval()
-    if True:
-        with torch.no_grad():
-        # Get the output
-            logits = model(data_sample)
-            output = F.log_softmax(logits, dim=1)
-            # Get the indices of the maximum values along the class dimension
-            predicted_class = torch.argmax(output, dim=1)
-        
-        label = predicted_class.int().item()
-        predicted_command = SpeechCommand(label).name
+    with torch.no_grad():
+    # Get the output
+        logits = model(data_sample)
+        output = F.log_softmax(logits, dim=1)
+        # Get the indices of the maximum values along the class dimension
+        predicted_class = torch.argmax(output, dim=1)
 
-        response = {
+    label = predicted_class.int().item()
+    predicted_command = SpeechCommand(label).name
+
+    response = {
         "message": HTTPStatus.OK.phrase,
         "status-code": HTTPStatus.OK,
         "data": {
@@ -196,8 +150,4 @@ def _predict(request: Request, type: str, payload: PredictPayload):
             "predicted_command": predicted_command,
         },
     }
-    else:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail="Model not found"
-        )
     return response

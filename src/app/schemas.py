@@ -6,7 +6,7 @@ from fastapi import UploadFile
 
 
 class PredictPayload(BaseModel):
-    file: UploadFile
+    audio_array: str
 
 
 class SpeechCommand(Enum):
