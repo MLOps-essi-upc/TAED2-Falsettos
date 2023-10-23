@@ -166,6 +166,7 @@ def _preprocess_data_sample(audio_decoded, feature_extractor, audio_length):
 def _predict(request: Request, type: str, payload: PredictPayload):
     """Recognise a Speech Command given an audio file"""
 
+<<<<<<< Updated upstream
     # Make some preprocessing if audio_file is not an audio array?
 
     # Path of the parameters file
@@ -182,6 +183,11 @@ def _predict(request: Request, type: str, payload: PredictPayload):
         data, sample_rate = sf.read(audio_file)
 
     data = data.tolist()
+=======
+    params = _get_params()
+    arr=eval(payload.audio_array)
+    data = np.frombuffer(arr)
+>>>>>>> Stashed changes
 
     feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(params["dataset"]["feature_extractor"]) # Wav2Vec2 feature extractor
     data_sample = _preprocess_data_sample(data, feature_extractor, params["dataset"]["audio_length"])

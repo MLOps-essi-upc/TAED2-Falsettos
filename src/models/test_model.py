@@ -107,7 +107,7 @@ def main():
     # ============== #
     model = HubertForAudioClassification(adapter_hidden_size=params["adapter_hidden_size"])
     # Load the state dictionary and then assign it to the model
-    PATH = os.path.join(MODELS_DIR,'final_model', '{}_bestmodel.pt'
+    PATH = os.path.join(MODELS_DIR, '{}_bestmodel.pt'
                         .format(params["algorithm_name"]))
     model.load_state_dict(torch.load(PATH), strict=False)
 
