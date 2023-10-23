@@ -166,7 +166,7 @@ def main():
     tracker.start()
 
     #Define saving checkpoints path
-    checkpoint_path = Path(str(MODELS_DIR)+"/checkpoints")
+    checkpoint_path = Path(str(os.path.dirname(MODELS_DIR))+"/checkpoints")
     if not os.path.exists(checkpoint_path):
         os.mkdir(checkpoint_path)
 
