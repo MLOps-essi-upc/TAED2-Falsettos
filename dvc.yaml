@@ -18,11 +18,11 @@ stages:
     - model
     outs:
     - models/final_model/
-  test: 
+  eval: 
     cmd: python -m src.models.test_model
     deps:
     - data/processed/
     - models/final_model/
-    - src/models/test_model.py
+    - src/models/eval_model.py
     params:
     - model

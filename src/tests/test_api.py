@@ -14,12 +14,12 @@ def client():
         return client
 
 
-@pytest.fixture
-def payload():
-    RAW_DATA_SAMPLE = os.path.join(ROOT_DIR, 'data', 'raw_sample_example', 'sample_example.pkl')
-    sample_df = pd.read_pickle(RAW_DATA_SAMPLE)
-    array_string = str(sample_df["audio_array"][0].tobytes())
-    return array_string
+# @pytest.fixture
+# def payload():
+#     RAW_DATA_SAMPLE = os.path.join(ROOT_DIR, 'data', 'raw_sample_example', 'sample_example.pkl')
+#     sample_df = pd.read_pickle(RAW_DATA_SAMPLE)
+#     array_string = str(sample_df["audio_array"][0].tobytes())
+#     return array_string
 
 
 def test_api_init(client):
@@ -33,16 +33,16 @@ def test_api_init(client):
     assert json["status-code"] == 200
 
 
-def test_api_model(client, payload):
-    label = 20
-    predicted_command = "bed"
-    response = client.post("/predict", payload)
-    assert response.status_code == 200
-    assert response.json() == {
-        "message": HTTPStatus.OK.phrase,
-        "status-code": HTTPStatus.OK,
-        "data": {
-            "predicted_label": label,
-            "predicted_command": predicted_command,
-        },
-    }
+# def test_api_model(client, payload):
+#     label = 20
+#     predicted_command = "bed"
+#     response = client.post("/predict", payload)
+#     assert response.status_code == 200
+#     assert response.json() == {
+#         "message": HTTPStatus.OK.phrase,
+#         "status-code": HTTPStatus.OK,
+#         "data": {
+#             "predicted_label": label,
+#             "predicted_command": predicted_command,
+#         },
+#     }

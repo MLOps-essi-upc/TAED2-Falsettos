@@ -45,7 +45,7 @@ def data_loading(input_folder_path, batch_size):
 
     return test_loader
 
-def test(loader, model, criterion, num_classes):
+def eval(loader, model, criterion, num_classes):
     model.eval()
     global_epoch_loss = 0
     total_preds = torch.Tensor()
@@ -124,7 +124,7 @@ def main():
     # ============== #
     print("------------- Testing phase ----------------")
 
-    test_loss, test_F1 = test(test_loader, model, criterion, params["num_classes"])
+    test_loss, test_F1 = eval(test_loader, model, criterion, params["num_classes"])
     mlflow.log_metric("Average Loss Test", test_loss)
     mlflow.log_metric("Best F1-score", test_F1)
 
