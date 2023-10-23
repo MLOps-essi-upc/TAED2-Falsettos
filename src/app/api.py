@@ -17,9 +17,10 @@ from transformers import Wav2Vec2FeatureExtractor
 import torch.nn.functional as F
 import os
 
-from src import MODELS_DIR, UNKNOWN_WORDS_V2
+from src import MODELS_DIR
 from src.app.schemas import SpeechCommand, PredictPayload
 from src.models.Hubert_Classifier_model import HubertForAudioClassification
+import os
 
 import soundfile as sf
 
@@ -74,7 +75,9 @@ def _get_params():
 def _load_model():
     """Load the HubertModel for Audio Classification"""
 
-    model_path = os.path.join(MODELS_DIR, "Hubert_Classifier_bestmodel.pt")
+
+    model_path = os.path.join(MODELS_DIR,"Hubert_Classifier_bestmodel.pt")
+
     params = _get_params()
 
     model = HubertForAudioClassification(adapter_hidden_size=params["model"]["adapter_hidden_size"])
@@ -125,10 +128,9 @@ def _predict(request: Request, payload: PredictPayload):
     """Recognise a Speech Command given an audio file"""
 
     params = _get_params()
-    print(payload.audio_array)
-    arr=eval(payload.audio_array)
-    data = np.frombuffer(arr)
-    print(arr)
+
+    data = np.frombuffer(eval(payload.audio_array))
+
 
     feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(params["dataset"]["feature_extractor"]) # Wav2Vec2 feature extractor
     data_sample = _preprocess_data_sample(data, feature_extractor, params["dataset"]["audio_length"])
