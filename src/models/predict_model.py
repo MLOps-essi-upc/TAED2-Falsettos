@@ -67,7 +67,7 @@ def predict_label():
     # ============== #
     # MODEL CREATION #
     # ============== #
-    model = HubertForAudioClassification(adapter_hidden_size=params["model"]["adapter_hidden_size"])
+    model = HubertForAudioClassification(adapter_hidden_size=128) # 128 is the best_model value
     # Load the state dictionary and then assign it to the model
     PATH = os.path.join(MODELS_DIR, '{}_bestmodel.pt'
                         .format(params["model"]["algorithm_name"]))

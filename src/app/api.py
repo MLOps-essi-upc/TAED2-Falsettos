@@ -77,7 +77,7 @@ def _load_model():
 
     params = _get_params()
 
-    model = HubertForAudioClassification(adapter_hidden_size=params["model"]["adapter_hidden_size"])
+    model = HubertForAudioClassification(adapter_hidden_size=128) # set best_model value
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     return model
 
