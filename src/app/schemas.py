@@ -2,12 +2,6 @@
 
 from enum import Enum
 from pydantic import BaseModel
-import numpy as np
-import numpy
-
-from pydantic import BaseModel
-
-
 
 
 class PredictPayload(BaseModel):

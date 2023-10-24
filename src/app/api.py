@@ -3,7 +3,6 @@
 from pathlib import Path
 import yaml
 
-import pickle
 from datetime import datetime
 from functools import wraps
 from http import HTTPStatus
@@ -21,8 +20,6 @@ from src import MODELS_DIR
 from src.app.schemas import SpeechCommand, PredictPayload
 from src.models.Hubert_Classifier_model import HubertForAudioClassification
 import os
-
-import soundfile as sf
 
 model_wrappers_list: List[dict] = []
 
