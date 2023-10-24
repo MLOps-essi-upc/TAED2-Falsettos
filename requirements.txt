@@ -28,3 +28,4 @@ pytest == 7.4.2
 great_expectations == 0.17.23
 jsonpickle == 3.0.2
 fastapi == 0.104.0
+sounddevice == 0.4.6
