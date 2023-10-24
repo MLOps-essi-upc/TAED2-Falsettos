@@ -55,12 +55,17 @@ Ensure a slow and clear pronunciation when recording the words. Avoid surroundin
 
 Use the code below to get started with the model:
 
-First import libraries needed (such as torch or transformers), also add the class HubertForAudioClassification. In predict_model.py you will find all the libraries needed and the class HubertForAudioClassification. 
+First get the best model using the following command:
+
+```bash
+dvc get https://github.com/MLOps-essi-upc/TAED2-Falsettos models/final_model/Hubert_Classifier_bestmodel.pt -o models/final_model/Hubert_Classifier_bestmodel.pt --force --rev adbbdbf1b0c9bd07835135b88e28e3642550cd98 
+```
+Then, you can use the model to predict on a single audio file. First import libraries needed (such as torch or transformers), also add the class HubertForAudioClassification. In "src/models/predict_model.py" you will find all the libraries needed, and in "src/models/Hubert_Classifier_model.py" theclass HubertForAudioClassification. 
 
 To load the best model, first initialize the model using our class HubertForAudioClassification. Then get the path .pt or .pth archive where are saved the best weights of the model. Then, load the weights to the model:
 
 ```python
-model = HubertForAudioClassification(adapter_hidden_size=params["model"]["adapter_hidden_size"])
+model = HubertForAudioClassification(adapter_hidden_size=128)
 
 PATH = os.path.join(MODELS_DIR,'final_model', '{}_bestmodel.pt'.format(params["model"]["algorithm_name"]))
     
@@ -152,21 +157,26 @@ Also we record the Loss average per epoch and the used loss is the CrossEntropyL
 
 ### Results
 
-{{ results | default("[More Information Needed]", true)}}
+F1-Score in validation: 0.973
+
+Final loss average in validation: 0.0928
+
+F1-Score in test: 0.895
+
+Average Loss Test: 0.513
 
 #### Summary
 
-{{ results_summary | default("", true) }}
+From the results we have obtained, we can see that the model makes very good predictions and is suited for this task. The F1-Score in validation is 0.973 and in test is 0.895. The lower F1-Score in test is due to the fact that the test dataset is more difficult than the validation dataset and maybe the model is overfitting to the validation dataset (we have to make a better hyperparameter tuning). Maybe in some classes the model is not so good (lowering the F1 score), but in general it makes very good predictions.
 
 ## Environmental Impact
 
 Carbon emissions are estimated using the codecarbon library for Python.
 
-- **Hardware Type:** Desktop device (RTX 3060 + 32GB RAM + i5 12400F)
-- **Hours used:** {{ hours_used | default("[More Information Needed]", true)}}
-- **Cloud Provider:** DagsHub (https://dagshub.com/) to experiment tracking and storing
+- **Hardware Type:** Desktop device (1 x NVIDIA GeForce RTX 3060 + 32GB RAM + 12th Gen Intel(R) Core(TM) i5-12400F)
+- **Hours used:** 1.835
 - **Compute Region:** Spain
-- **Carbon Emitted:** {{ co2_emitted | default("[More Information Needed]", true)}} kg CO2
+- **Carbon Emitted:** 0.07728 kg of CO2
 
 ## Model Card Contact
 e-mail: armand.de.asis@estudiantat.upc.edu
