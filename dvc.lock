@@ -33,8 +33,8 @@ stages:
       size: 6400265348
       nfiles: 21
     - path: src/models/train_model.py
-      md5: e86d7016e4f4040eb773f810dd404178
-      size: 8395
+      md5: 86298aba88173ae412d30624f73a0235
+      size: 8550
     params:
       params.yaml:
         model:
@@ -68,6 +68,34 @@ stages:
     - path: src/models/test_model.py
       md5: 881f5ad7257d33a4e2a263c4df6cd20d
       size: 4316
+    params:
+      params.yaml:
+        model:
+          algorithm_name: Hubert_Classifier
+          random_state: 33
+          num_classes: 36
+          batch_size: 256
+          lr: 0.0001
+          momentum: 0.9
+          optimizer: adam
+          adapter_hidden_size: 256
+          epochs: 20
+          patience: 5
+          log_interval: 15
+  eval:
+    cmd: python -m src.models.test_model
+    deps:
+    - path: data/processed/
+      md5: 71e19ba3eece3a035a491a870ffb331e.dir
+      size: 6400265348
+      nfiles: 21
+    - path: models/final_model/
+      md5: 9b22d99eb2012903f20fcfc3c3eee493.dir
+      size: 379981720
+      nfiles: 2
+    - path: src/models/eval_model.py
+      md5: 7fa3ecca1b4b7eeb0781731618c8ef77
+      size: 4388
     params:
       params.yaml:
         model:
