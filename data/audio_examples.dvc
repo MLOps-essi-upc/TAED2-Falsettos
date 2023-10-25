@@ -1,0 +1,5 @@
+outs:
+- md5: 265fdd91ec9a9ede70abb812934b6043.dir
+  size: 110094
+  nfiles: 3
+  path: audio_examples
