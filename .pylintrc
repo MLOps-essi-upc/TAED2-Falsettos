@@ -10,5 +10,6 @@ R0914: too-many-locals
 R0913: too-many-arguments
 R0915: too-many-statements
 R0801: duplicate-code
+C0200: consider-using-enumerate
 
-disable=E0401,W0613,W0212,E0015,C0103,W0621,R0914,R0913,R0915,R0801
+disable=E0401,W0613,W0212,E0015,C0103,W0621,R0914,R0913,R0915,R0801,C0200
