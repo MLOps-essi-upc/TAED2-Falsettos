@@ -1,14 +1,18 @@
-"""Definitions for the objects used by our resource endpoints."""
+"""
+Definitions for the objects used by our resource endpoints.
+"""
 
 from enum import Enum
 from pydantic import BaseModel
 
 
 class PredictPayload(BaseModel):
+    """Define the predict payload of the api."""
     audio_array: str
 
 
 class SpeechCommand(Enum):
+    """Define the different classes and labels."""
     Yes = 0
     No = 1
     Up = 2

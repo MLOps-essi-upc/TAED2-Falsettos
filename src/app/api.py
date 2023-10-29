@@ -1,32 +1,32 @@
 """Main script: it includes our API initialization and endpoints."""
+import ast
+import os
 
 from pathlib import Path
-import yaml
-
 from datetime import datetime
 from functools import wraps
 from http import HTTPStatus
 from typing import List
 
+import yaml
 import torch
-import numpy as np
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File
-from typing import Annotated
-from transformers import Wav2Vec2FeatureExtractor
 import torch.nn.functional as F
-import os
+import numpy as np
+
+from fastapi import FastAPI, Request
+from transformers import Wav2Vec2FeatureExtractor
 
 from src import MODELS_DIR
 from src.app.schemas import SpeechCommand, PredictPayload
 from src.models.Hubert_Classifier_model import HubertForAudioClassification
-import os
 
 model_wrappers_list: List[dict] = []
 
 # Define application
 app = FastAPI(
     title="Speech Command Recognition",
-    description="This API lets you make predictions on the SpeechCommands dataset using the HubertModel.",
+    description="This API lets you make predictions on the "
+                "SpeechCommands dataset using the HubertModel.",
     version="0.1",
 )
 
@@ -60,7 +60,7 @@ def _get_params():
     """Read data preparation parameters"""
 
     params_path = Path("params.yaml")
-    with open(params_path, "r") as params_file:
+    with open(params_path, "r", encoding='utf-8') as params_file:
         try:
             params = yaml.safe_load(params_file)
         except yaml.YAMLError as exc:
@@ -72,12 +72,9 @@ def _get_params():
 def _load_model():
     """Load the HubertModel for Audio Classification"""
 
+    model_path = os.path.join(MODELS_DIR, "Hubert_Classifier_bestmodel.pt")
 
-    model_path = os.path.join(MODELS_DIR,"Hubert_Classifier_bestmodel.pt")
-
-    params = _get_params()
-
-    model = HubertForAudioClassification(adapter_hidden_size=128) # set best_model value
+    model = HubertForAudioClassification(adapter_hidden_size=128)  # set best_model value
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     return model
 
@@ -106,9 +103,9 @@ def _preprocess_data_sample(audio_decoded, feature_extractor, audio_length):
 
     audio_array = audio_decoded-audio_decoded.mean()
 
-    if len(audio_decoded)<audio_length*16000:  # the audio is shorter than one second, we need to pad it
+    if len(audio_decoded)<audio_length*16000:  # pad if the audio is shorter than one second
         audio_decoded = np.pad(audio_decoded, (0, 16000-len(audio_decoded)), 'constant')
-    elif len(audio_decoded)>audio_length*16000:  # the audio is longer than one second, we need to cut it
+    elif len(audio_decoded)>audio_length*16000:  # cut if the audio is longer than one second
         audio_decoded = audio_decoded[:16000]
 
     feature_extractor(audio_array, sampling_rate = 16000)
@@ -126,16 +123,18 @@ def _predict(request: Request, payload: PredictPayload):
 
     params = _get_params()
 
-    data = np.frombuffer(eval(payload.audio_array))
-
-
-    feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(params["dataset"]["feature_extractor"]) # Wav2Vec2 feature extractor
-    data_sample = _preprocess_data_sample(data, feature_extractor, params["dataset"]["audio_length"])
+    data = np.frombuffer(ast.literal_eval(payload.audio_array))
+    feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
+        params["dataset"]["feature_extractor"]
+    )  # Wav2Vec2 feature extractor
+    data_sample = _preprocess_data_sample(
+        data, feature_extractor, params["dataset"]["audio_length"]
+    )
 
     model = _load_model()
     model.eval()
     with torch.no_grad():
-    # Get the output
+        # Get the output
         logits = model(data_sample)
         output = F.log_softmax(logits, dim=1)
         # Get the indices of the maximum values along the class dimension
