@@ -1,4 +1,5 @@
-""" Define the Hubert model
+"""
+Define the Hubert model.
 """
 
 
@@ -6,8 +7,10 @@ from transformers import HubertModel
 from torch import nn
 import torch.nn.functional as F
 
+
 class HubertForAudioClassification(nn.Module):
-    def __init__(self, adapter_hidden_size = 64):
+    """Definition for the Hubert model for audio classification."""
+    def __init__(self, adapter_hidden_size=64):
         super().__init__()
 
         self.hubert = HubertModel.from_pretrained("facebook/hubert-base-ls960")
@@ -36,6 +39,7 @@ class HubertForAudioClassification(nn.Module):
         self.hubert.feature_extractor._freeze_parameters()
 
     def forward(self, x):
+        """Compute the forward method of the model."""
         # x shape: (B,E)
         x = self.hubert(x).last_hidden_state
         x = F.layer_norm(x, x.shape[1:])

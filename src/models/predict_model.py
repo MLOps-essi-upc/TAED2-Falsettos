@@ -1,5 +1,7 @@
-""" Given an audio file, predicts its label
 """
+Given an audio file, predicts its label
+"""
+
 import os
 from pathlib import Path
 
@@ -31,10 +33,10 @@ def preprocess_data_sample(audio_decoded, feature_extractor, audio_length):
     elif len(audio_decoded)>audio_length*16000:
         audio_decoded = audio_decoded[:16000]
 
-    feature_extractor(audio_decoded, sampling_rate = 16000)
+    feature_extractor(audio_decoded, sampling_rate=16000)
 
     tensor = torch.from_numpy(audio_decoded.astype(np.float32))
-    tensor = tensor.unsqueeze(0) # add batch dimension
+    tensor = tensor.unsqueeze(0)  # add batch dimension
     return tensor
 
 
@@ -45,7 +47,7 @@ def predict_label():
     params_path = Path("params.yaml")
 
     # Read data preparation parameters
-    with open(params_path, "r") as params_file:
+    with open(params_path, "r", encoding='utf-8') as params_file:
         try:
             params = yaml.safe_load(params_file)
         except yaml.YAMLError as exc:
@@ -62,16 +64,15 @@ def predict_label():
     feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
         params["dataset"]["feature_extractor"])
     data_sample = preprocess_data_sample(sample_df['audio_array'][0],
-                    feature_extractor, params["dataset"]["audio_length"])
+                                         feature_extractor, params["dataset"]["audio_length"])
 
     # ============== #
     # MODEL CREATION #
     # ============== #
-    model = HubertForAudioClassification(adapter_hidden_size=128) # 128 is the best_model value
+    model = HubertForAudioClassification(adapter_hidden_size=128)  # 128 is the best_model value
     # Load the state dictionary and then assign it to the model
-    PATH = os.path.join(MODELS_DIR, '{}_bestmodel.pt'
-                        .format(params["model"]["algorithm_name"]))
-    model.load_state_dict(torch.load(PATH, map_location=torch.device('cpu')))
+    path = os.path.join(MODELS_DIR, f'{params["model"]["algorithm_name"]}_bestmodel.pt')
+    model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
 
     # Move the model to CPU
     model.cpu()
