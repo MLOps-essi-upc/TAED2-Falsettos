@@ -57,15 +57,16 @@ Project Structure
     │   │   └── preprocess_dataset.py
     │   ├── features      
     │   │   └── validate.py
-    │   ├── models        
-    │   │   ├── __init__.py
-    │   │   ├── eval_model.py
-    │   │   ├── Hubert_Classifier_model.py
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
-    │   └── tests
-    │       ├── test_api.py
-    │       └── test_model.py
+    │   └── models        
+    │       ├── __init__.py
+    │       ├── eval_model.py
+    │       ├── Hubert_Classifier_model.py
+    │       ├── predict_model.py
+    │       └── train_model.py
+    │
+    ├── tests
+    │   ├── test_api.py
+    │   └── test_model.py
     │
     ├── .gitignore
     │
