@@ -67,7 +67,7 @@ def main():
               ", with length: ", len(dataset_split), sep = "")
         # to store the preprocessed data for each split
         preprocessed_datasplit = [None]*len(dataset_split)
-        for i in enumerate(dataset_split):
+        for i in range(len(dataset_split)):
             preprocessed_datasplit[i] = preprocess_data(
                 dataset_split[i], feature_extractor, params["total_labels"], params["audio_length"]
             )

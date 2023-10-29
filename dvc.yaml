@@ -19,7 +19,7 @@ stages:
     outs:
     - models/final_model/
   eval: 
-    cmd: python -m src.models.test_model
+    cmd: python -m src.models.eval_model
     deps:
     - data/processed/
     - models/final_model/

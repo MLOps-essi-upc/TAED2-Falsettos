@@ -121,6 +121,10 @@ def main():
         except yaml.YAMLError as exc:
             print(exc)
 
+    # Create the models directory if it does not exist
+    if not os.path.exists(MODELS_DIR):
+        os.mkdir(MODELS_DIR)
+
     seed_everything(params["random_state"])
     print("------- Training of", params["algorithm_name"], "-------")
 
@@ -159,8 +163,7 @@ def main():
     # ============== #
     print("------------- Training phase ----------------")
     # Define the emissions tracker
-    tracker = EmissionsTracker(measure_power_secs=10, output_dir=os.path.
-                               join(MODELS_DIR, 'final_model'),
+    tracker = EmissionsTracker(measure_power_secs=10, output_dir=MODELS_DIR,
                                log_level= "warning") # measure power every 10 seconds
     tracker.start()
 
@@ -215,11 +218,10 @@ def main():
     model.load_state_dict(torch.load(f'{checkpoint_path}/model_{epoch:03d}.pt'))
 
     # Save model
-    final_model_save_path = os.path.join(MODELS_DIR, 'final_model')
-    if not os.path.exists(final_model_save_path):
-        os.mkdir(final_model_save_path)
-    model.save(model.state_dict(),
-               os.path.join(MODELS_DIR, 'final_model', f'{params["algorithm_name"]}_bestmodel.pt'))
+    if not os.path.exists(MODELS_DIR):
+        os.mkdir(MODELS_DIR)
+    torch.save(model.state_dict(),
+               os.path.join(MODELS_DIR, f'{params["algorithm_name"]}_bestmodel.pt'))
 
     emissions: float = tracker.stop()
     # Log metrics to Mlflow
@@ -227,7 +229,7 @@ def main():
     mlflow.log_metric("Best F1-score", best_val_f1)
 
     # Log artifacts to Mlflow
-    mlflow.log_artifact(os.path.join(MODELS_DIR, 'final_model', 'emissions.csv'), 'metrics')
+    mlflow.log_artifact(os.path.join(MODELS_DIR, 'emissions.csv'), 'metrics')
     mlflow.pytorch.log_model(model, "model")
 
 
