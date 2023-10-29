@@ -122,6 +122,11 @@ def main():
             print(exc)
 
     # Create the models directory if it does not exist
+    general_models = Path(str(os.path.dirname(MODELS_DIR)))
+    if not os.path.exists(general_models):
+        os.mkdir(general_models)
+
+    # Create the final model directory if it does not exist
     if not os.path.exists(MODELS_DIR):
         os.mkdir(MODELS_DIR)
 
@@ -217,9 +222,6 @@ def main():
     epoch = state['epoch']
     model.load_state_dict(torch.load(f'{checkpoint_path}/model_{epoch:03d}.pt'))
 
-    # Save model
-    if not os.path.exists(MODELS_DIR):
-        os.mkdir(MODELS_DIR)
     torch.save(model.state_dict(),
                os.path.join(MODELS_DIR, f'{params["algorithm_name"]}_bestmodel.pt'))
 
