@@ -1,3 +1,7 @@
+"""
+This module contains the dataset validations.
+"""
+
 import great_expectations as ge
 import pandas as pd
 import datasets
@@ -5,6 +9,7 @@ from src import RAW_DATA_DIR
 
 
 def great_expectations(df):
+    """Define the great expectations validation for the dataset"""
     context = ge.get_context()
 
     context.add_or_update_expectation_suite("speech_commands_suite")
@@ -51,15 +56,16 @@ def great_expectations(df):
     context.view_validation_result(checkpoint_result)
 
 
-
 def main():
+    """Run great expectations"""
     audio_dataset = datasets.load_from_disk(RAW_DATA_DIR)
-    df = pd.DataFrame() 
-    for split, dataset_split in audio_dataset.items():
+    df = pd.DataFrame()
+    for _, dataset_split in audio_dataset.items():
         df = pd.concat([df, dataset_split.to_pandas()])
-    df = df.reset_index(drop=True) 
+    df = df.reset_index(drop=True)
     df = ge.dataset.PandasDataset(df)
     great_expectations(df)
+
 
 if __name__ == "__main__":
     main()
