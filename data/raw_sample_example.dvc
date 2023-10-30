@@ -1,0 +1,5 @@
+outs:
+- md5: cee16202c3db652d6a6860d4e241fa7d.dir
+  size: 110020
+  nfiles: 1
+  path: raw_sample_example

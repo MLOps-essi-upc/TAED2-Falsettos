@@ -1,0 +1,15 @@
+[MESSAGES CONTROL]
+
+E0401: import-error
+W0613: unused-argument
+W0212: protected-access
+E0015: unrecognized-option
+C0103: invalid-name
+W0621: redefined-outer-name
+R0914: too-many-locals
+R0913: too-many-arguments
+R0915: too-many-statements
+R0801: duplicate-code
+C0200: consider-using-enumerate
+
+disable=E0401,W0613,W0212,E0015,C0103,W0621,R0914,R0913,R0915,R0801,C0200
